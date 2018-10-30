@@ -1,0 +1,107 @@
+
+#ifndef _GRAFO_HPP_
+#define _GRAFO_HPP_
+
+
+#include <stdlib.h>
+#include <algorithm>
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <algorithm>
+#include <tuple>
+#include <cstdio>
+#include <cstdlib>
+#include <string>
+#include <sstream>
+#include <math.h>
+#include <queue>
+#include <chrono>
+#include <limits> 
+
+#define SIZE_PLACE 12
+#define CAPACITY_PLACE 11
+#define INF numeric_limits<double>::infinity()
+using namespace std;
+
+struct Coordenadas
+	{
+		double x;
+		double y;	
+	};
+
+
+struct TspFile
+{
+    int capacidad;
+    vector<Coordenadas> coordenadas;
+    vector<int> demandas;
+    int deposito;
+};
+
+typedef vector< tuple <int,int,double> > listAristas;
+
+class Comparador 
+{
+public:
+	int operator()(tuple<int,double> t ,tuple<int,double> s){
+		return get<1>(t) > get<1>(s);
+	}
+};
+
+class Grafo
+{
+	struct Node
+	{
+		double weight;
+		int id;
+	};
+
+	
+
+	public:
+		vector<Coordenadas>& puntos();
+		Grafo(TspFile tsp);
+		//Grafo(vector<Coordenadas> puntos); // constructor de grafo Kn con coordenadas
+		//Grafo(vector<vector<double>> pesos); // constructor de grafo Kn con matriz de pesos
+		//Grafo(listAristas l, int cantNodos); // Contructor con listaAristas.
+		bool existe(int u, int v);
+		void imprimir();
+		//void new_node();
+		void new_node(int n);
+		void borrar_edge(int u, int v);
+		void add_edge(int u, int v, double weight);
+		//void add_directional_edge(int u, int v, double weight);
+		void conjunction_pc(int u, int v);
+		int find_pc(int id);
+		void init_kruskal_pc();
+		void imprimir_pos();
+		int find(int id);
+		void init_kruskal();
+		void conjunction(int u, int v);
+		listAristas obtener_vecinos(int u, int v, double cant_vecinos);
+		listAristas kruskal(listAristas aristas);
+		listAristas kruskal_pc(listAristas aristas);
+		listAristas prim();
+		listAristas convert();
+
+		void cicloNegativoFW();
+		void cicloNegativoBF();
+
+        void logPesos();
+
+	private:
+		vector<int> _padre;
+		vector<int> _altura;
+		vector< vector<double> > _vertices;
+		vector<int> _demandas;
+		vector<Coordenadas> _puntos;
+		int _capacidad;
+
+		double& peso(int u, int v);
+		int floydWarshall(vector< vector<int> > &distancias);
+		int bellmanFord(vector< vector<int> > &distancias);
+
+};
+
+#endif
