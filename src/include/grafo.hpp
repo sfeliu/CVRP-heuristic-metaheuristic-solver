@@ -61,7 +61,7 @@ class Grafo
 
 	public:
 		vector<Coordenadas>& puntos();
-		Grafo(TspFile tsp);
+		Grafo(TspFile tsp, string mode);
 		//Grafo(vector<Coordenadas> puntos); // constructor de grafo Kn con coordenadas
 		//Grafo(vector<vector<double>> pesos); // constructor de grafo Kn con matriz de pesos
 		//Grafo(listAristas l, int cantNodos); // Contructor con listaAristas.
@@ -72,35 +72,39 @@ class Grafo
 		void borrar_edge(int u, int v);
 		void add_edge(int u, int v, double weight);
 		//void add_directional_edge(int u, int v, double weight);
-		void conjunction_pc(int u, int v);
-		int find_pc(int id);
+		//void conjunction_pc(int u, int v);
+		//int find_pc(int id);
 		void init_kruskal_pc();
 		void imprimir_pos();
-		int find(int id);
-		void init_kruskal();
-		void conjunction(int u, int v);
-		listAristas obtener_vecinos(int u, int v, double cant_vecinos);
-		listAristas kruskal(listAristas aristas);
-		listAristas kruskal_pc(listAristas aristas);
-		listAristas prim();
-		listAristas convert();
+		//int find(int id);
+		//void init_kruskal();
+		//void conjunction(int u, int v);
+		//listAristas obtener_vecinos(int u, int v, double cant_vecinos);
+		//listAristas kruskal(listAristas aristas);
+		//listAristas kruskal_pc(listAristas aristas);
+		//listAristas prim();
+		//listAristas convert();
 
-		void cicloNegativoFW();
-		void cicloNegativoBF();
+		//void cicloNegativoFW();
+		//void cicloNegativoBF();
 
-        void logPesos();
+        //void logPesos();
+        double diffEuclidea(int u, int v);
 
 	private:
 		vector<int> _padre;
 		vector<int> _altura;
-		vector< vector<double> > _vertices;
+		vector< vector<Node> > _vertices;
 		vector<int> _demandas;
 		vector<Coordenadas> _puntos;
 		int _capacidad;
+		int _deposito;
 
 		double& peso(int u, int v);
-		int floydWarshall(vector< vector<int> > &distancias);
-		int bellmanFord(vector< vector<int> > &distancias);
+        void crearKn();
+		void crearStar(int center);
+		//int floydWarshall(vector< vector<int> > &distancias);
+		//int bellmanFord(vector< vector<int> > &distancias);
 
 };
 

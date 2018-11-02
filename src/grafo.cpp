@@ -1,27 +1,38 @@
+
+#include <grafo.hpp>
+
 #include "include/grafo.hpp"
 
 
-vector<string> split_line(string &line, char delim) {
-    stringstream line_stream(line);
-    vector<string> words;
-    string word;
-    while(getline(line_stream, word, delim)) {
-        words.push_back(word);
-    }
-    return words;
-}
-
-
-Grafo::Grafo(TspFile tsp){
+Grafo::Grafo(TspFile tsp, string mode){
     vector<Coordenadas> puntos = tsp.coordenadas;
     unsigned long n = puntos.size();
     this->new_node(n);
+    _puntos = puntos;
+    _demandas = tsp.demandas;
+    _capacidad = tsp.capacidad;
+    _deposito = tsp.deposito;
+    if(mode == "kn"){
+        crearKn();
+    }
+    else if(mode == "star"){
+        crearStar(_deposito);
+    }
+}
+
+double Grafo::diffEuclidea(int u, int v){
+    double diff_x = _puntos[u].x - _puntos[v].x;
+    double diff_y = _puntos[u].y - _puntos[v].y;
+    double peso = round(sqrt(diff_x*diff_x + diff_y*diff_y));
+    return peso;
+}
+
+void Grafo::crearKn() {
+    unsigned long n = _puntos.size();
     for(int i = 0; i<n ; i++){
         for(int j = 0; j<n; j++){
             if(i != j ){
-                double diff_x = puntos[i].x - puntos[j].x;
-                double diff_y = puntos[i].y - puntos[j].y;
-                double peso = sqrt(diff_x*diff_x + diff_y*diff_y);
+                double peso = diffEuclidea(i, j);
                 this->add_edge(i,j,peso);
                 /*if((i == 12 || i == 16)&&(j == 12 || j == 16)){
                     cout << "i=(" << puntos[i].x << "," << puntos[i].y << ");j=(" << puntos[j].x << "," << puntos[j].y << ") |" << "diff_x="<< diff_x << ";diff_y=" << diff_y <<";peso "<< peso << endl;
@@ -30,9 +41,16 @@ Grafo::Grafo(TspFile tsp){
             }
         }
     }
-    _puntos = puntos;
-    _demandas = tsp.demandas;
-    _capacidad = tsp.capacidad;
+}
+
+void Grafo::crearStar(int center){
+    unsigned long n = _puntos.size();
+    for(int i = 0; i<n; i++){
+        if(center != i){
+            double peso = diffEuclidea(center, i);
+            this->add_edge(center, i, peso);
+        }
+    }
 }
 
 /* Nunca se usa
@@ -86,15 +104,17 @@ Grafo::Grafo(listAristas l, int cantNodos) {
 
 void Grafo::new_node(int n){
 	for(int i = 0; i < n; i++){
-	    vector<double> v;
+	    vector<Node> v;
 		_vertices.push_back(v);
 	}
 }
 
 
 bool Grafo::existe(int u, int v){
-    if(_vertices.size() > u && _vertices[0].size() > v) {
-        return _vertices[u][v] >= 0;
+    for(int i=0; i <  _vertices[u].size(); i++){
+        if(_vertices[u][i].id == v){
+            return true;
+        }
     }
     return false;
 }
@@ -103,8 +123,16 @@ void Grafo::borrar_edge(int u, int v){
 	if(0 > u > _vertices.size()-1 || 0 > v > _vertices.size()-1){
 		return;
 	}
-	_vertices[u][v] = -1;
-	_vertices[v][u] = -1;
+    for(int i=0; i<_vertices[u].size(); i++) {
+        if (_vertices[u][i].id == v) {
+            _vertices[u].erase(_vertices[u].begin() + i);
+        }
+    }
+    for(int i=0; i<_vertices[v].size(); i++) {
+        if (_vertices[v][i].id == u) {
+            _vertices[v].erase(_vertices[v].begin() + i);
+        }
+    }
 }
 
 /* No se usa
@@ -123,15 +151,22 @@ void Grafo::add_edge(int u, int v, double w){
 	if(0 > u > _vertices.size()-1 || 0 > v > _vertices.size()-1 || existe(u,v)){
 		return;
 	}
-    _vertices[u][v] = w;
-    _vertices[v][u] = w;
+    Node nuevo_1 = Node();
+    nuevo_1.id = v;
+    nuevo_1.weight = w;
+    (_vertices[u]).push_back(nuevo_1);
+
+    Node nuevo_2 = Node();
+    nuevo_2.id = u;
+    nuevo_2.weight = w;
+    (_vertices[v]).push_back(nuevo_2);
 }
 
 void Grafo::imprimir(){
 	cout<< endl << "imprimiendo grafo..."<< endl;
 	for(int i = 0; i < _vertices.size();i++){
 		for(int j = 0; j< _vertices[i].size(); j++){
-			cout<< "(" << i << "-" << _vertices[i][j] << "->" << j << ") ";
+			cout<< "(" << i << "-" << _vertices[i][j].weight << "->" <<  _vertices[i][j].id << ") ";
 		}
 		cout << endl;
 	}
@@ -150,13 +185,16 @@ void Grafo::init_kruskal_pc(){
 	}
 }
 
+/*
 int Grafo::find_pc(int id){
 	if(_padre[id] != id){
 		_padre[id] = find(_padre[id]);
 	}
 	return _padre[id];
 }
+*/
 
+/*
 void Grafo::conjunction_pc(int u, int v){
 	int x = find(u);
 	int y = find(v);
@@ -169,7 +207,9 @@ void Grafo::conjunction_pc(int u, int v){
 		_altura[x] = _altura[x]+1;
 	}
 }
+*/
 
+/*
 listAristas Grafo::convert(){
 	listAristas aristas;
 	for(int i = _vertices.size()-1; i >= 0; i--){
@@ -180,8 +220,9 @@ listAristas Grafo::convert(){
 	}
 	return aristas;
 
-}
+}*/
 
+/*
 listAristas Grafo::kruskal_pc(listAristas aristas){
 	init_kruskal_pc();
 	listAristas agm;
@@ -194,26 +235,32 @@ listAristas Grafo::kruskal_pc(listAristas aristas){
 	}
 	return agm;
 }
+*/
 
-
+/*
 void Grafo::init_kruskal(){
 	for(int i = 0; i<(_vertices).size(); i++){
 		_padre.push_back(i);
 	}
 }
+*/
 
+/*
 int Grafo::find(int id){
 	if(_padre[id] != id){
 		return find(_padre[id]);
 	}
 	return _padre[id];
 }
+*/
 
+/*
 void Grafo::conjunction(int u, int v){
 	_padre[find(u)] = _padre[find(v)];
 }
+ */
 
-
+/*
 listAristas Grafo::kruskal(listAristas aristas){
 	init_kruskal();
 	listAristas agm;
@@ -226,7 +273,9 @@ listAristas Grafo::kruskal(listAristas aristas){
 	}
 	return agm;
 }
+*/
 
+/*
 listAristas Grafo::prim(){
 	listAristas padre;
 	vector<double> distancia;
@@ -260,7 +309,9 @@ listAristas Grafo::prim(){
 	}
 	return padre;
 }
+*/
 
+/*
 void sumaCamino(listAristas l, int u, int v, double &suma, int &pasos, int &vecinos){
 	if (pasos == 0){
 		return;
@@ -283,8 +334,9 @@ void sumaCamino(listAristas l, int u, int v, double &suma, int &pasos, int &veci
 		}
 	}
 }
+*/
 
-
+/*
 double promedio_vecinos(listAristas vecinos){
 	double suma = 0;
 	// pasos = diametro;
@@ -299,7 +351,9 @@ double promedio_vecinos(listAristas vecinos){
 	}
 	return suma;
 }
+*/
 
+/*
 void varianza_vecinos(listAristas l, int u, int v, double &suma, int &pasos, int &vecinos, double promedio){
 	if (pasos == 0){
 		return;
@@ -322,7 +376,9 @@ void varianza_vecinos(listAristas l, int u, int v, double &suma, int &pasos, int
 		}
 	}					
 }
+*/
 
+/*
 double desvio_estandard(listAristas vecinos, double promedio){
     double suma = 0;
     for(int i=0; i<vecinos.size(); i++){
@@ -337,8 +393,9 @@ double desvio_estandard(listAristas vecinos, double promedio){
     return suma;
 
 }
+*/
 
-
+/*
 // Basado en DFS, Sabiendo que no hay ciclos.
 listAristas Grafo::obtener_vecinos(int u, int v, double cant_vecinos){
     listAristas vecindad;
@@ -353,7 +410,9 @@ listAristas Grafo::obtener_vecinos(int u, int v, double cant_vecinos){
     }
     return vecindad;
 }
+*/
 
+/*
 listAristas remover_inconsistentes(listAristas l, Grafo g, double ds, double f, double diametro, int mod){
 	listAristas res = l;
 	for(int i = 0; i < res.size(); i++){ //   O(6*E*E)
@@ -372,7 +431,7 @@ listAristas remover_inconsistentes(listAristas l, Grafo g, double ds, double f, 
             double desvio_u = desvio_estandard(vecinos_u,promedio_u); //O(E)
             double desvio_v = desvio_estandard(vecinos_v,promedio_v); //O(E)
 
-            /*if(u == 8 || v == 8) {
+            *//*if(u == 8 || v == 8) {
 		        cout << "Viendo caso u=" << u << " y v=" << v << " con vecindad=" << diametro <<endl;
                 cout << "u -->" << endl;
                 for (int x = 0; x < vecinos_u.size(); x++) {
@@ -386,7 +445,7 @@ listAristas remover_inconsistentes(listAristas l, Grafo g, double ds, double f, 
                 }
                 cout << "Promedio obtenido u: " << promedio_u << " | promedio obtenido v: " << promedio_v << endl;
                 cout << "desvio obtenido u: " << desvio_u << " | desvio obtenido v: " << desvio_v << endl;
-            }*/
+            }*//*
 
 			bool pesoMayorPromedioU = peso > f*promedio_u;
 			bool pesoMayorPromedioV = peso > f*promedio_v;
@@ -428,6 +487,7 @@ listAristas remover_inconsistentes(listAristas l, Grafo g, double ds, double f, 
 	}
 	return res;
 }
+*/
 
 
 void imprimir_agm(listAristas l){
@@ -438,6 +498,7 @@ void imprimir_agm(listAristas l){
 	}
 	cout << endl;
 }
+
 
 void Grafo::imprimir_pos(){
 	cout<< "imprimiendo cordenadas..."<<endl;
@@ -453,9 +514,14 @@ vector<Coordenadas>& Grafo::puntos(){
 }
 
 double& Grafo::peso(int u, int v){
-	return _vertices[u][v].weight;
+    for(int i=0; i<_vertices[u].size(); i++) {
+        if (_vertices[u][i].id == v) {
+            return _vertices[u][i].weight;
+        }
+    }
 }
 
+/*
 void Grafo::logPesos(){
 	int n = _vertices.size();
 	for (int u = 0; u < n; u++){
@@ -464,7 +530,9 @@ void Grafo::logPesos(){
 		}
 	}
 }
+*/
 
+/*
 void Grafo::cicloNegativoFW(){
     auto start = chrono::steady_clock::now();
 	int n = _vertices.size();
@@ -495,7 +563,9 @@ void Grafo::cicloNegativoFW(){
     cerr << chrono::duration<double, milli>(diff).count();
 
 }
+*/
 
+/*
 int Grafo::floydWarshall(vector< vector<int> > &siguiente){
     int n = _vertices.size();
 	vector <double> filaDistancias(n,INF);
@@ -525,7 +595,9 @@ int Grafo::floydWarshall(vector< vector<int> > &siguiente){
             return i; 
     return -1;  
 }
+*/
 
+/*
 void Grafo::cicloNegativoBF(){
     int n = _vertices.size();
     vector <int> pred(n,-1);
@@ -577,6 +649,8 @@ void Grafo::cicloNegativoBF(){
         cout<< "NO";
     }
 }
+*/
+
 
 void descubrirConexoAux(int u, listAristas res, int& contador, vector<bool> &visitado, int& i, vector<int> &comp_conex){
 	comp_conex[u] = contador;
