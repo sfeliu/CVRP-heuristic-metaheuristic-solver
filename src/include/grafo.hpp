@@ -18,8 +18,8 @@
 #include <queue>
 #include <chrono>
 #include <limits> 
-
-#define INF numeric_limits<double>::infinity()
+#include <list>
+#define INF numeric_limits<int>::infinity()
 using namespace std;
 
 struct Coordenadas
