@@ -89,6 +89,7 @@ class Grafo
         //void logPesos();
         double diffEuclidea(int u, int v);
 
+		vector<vector <int> > clusterizeRadial();
 	private:
 		vector<int> _padre;
 		vector<int> _altura;
@@ -98,7 +99,9 @@ class Grafo
 		int _capacidad;
 		int _deposito;
 
+		bool Grafo::porPeso(tuple<int,double> a, tuple<int,double> b);
 		double& peso(int u, int v);
+		bool porPeso(int u, int v);
         void crearKn();
 		void crearStar(int center);
 		//int floydWarshall(vector< vector<int> > &distancias);

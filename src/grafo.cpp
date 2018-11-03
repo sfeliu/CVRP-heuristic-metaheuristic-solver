@@ -174,6 +174,9 @@ bool porPeso(tuple<int,int,double> a, tuple<int,int,double> b){
 	return (get<2>(a) < get<2>(b));
 }
 
+bool Grafo::porPeso(tuple<int,double> a, tuple<int,double> b){
+	return (get<1>(a) > get<1>(b));
+}
 
 void Grafo::init_kruskal_pc(){
 	for(int i = 0; i<(_vertices).size(); i++){
@@ -705,4 +708,32 @@ listAristas diff(listAristas& l1, listAristas& l2){
 		}
 	}
 	return res;
+}
+
+vector<vector<int> > Grafo::clusterizeRadial(){
+	vector<vector<int> > todosClusters;
+	int n = _vertices.size();
+
+	vector<tuple<int,double> > clientes;
+	for (int i = 0; i < n; i++){
+		clientes.push_back(tuple<int,double> (i,peso(i,_deposito)));
+	}
+
+  sort(clientes.begin(),clientes.end(),
+       [](const tuple<int,double>& a,
+       const tuple<int,double>& b) -> bool
+       {
+         return std::get<1>(a) > std::get<1>(b);
+       });
+	// sort(clientes.begin(),clientes.end(),porPeso);
+
+	for (auto c : clientes){
+		if (get<0>(c) == _deposito) continue;
+		vector<int> cluster;
+		while (_capacidad >= _demandas[get<0>(c)]){
+			cluster.push_back(get<0>(c));
+		}
+		todosClusters.push_back(cluster);
+	}
+	return todosClusters;
 }
