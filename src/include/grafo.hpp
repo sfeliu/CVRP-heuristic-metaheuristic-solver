@@ -108,7 +108,8 @@ class Grafo
 
         //void logPesos();
         double diffEuclidea(int u, int v);
-
+		vector< vector<int> > GolosoMasCercano();
+		int tomarMinDist(int nodo, list<int>& l);
 		vector<vector <int> > clusterizeRadial();
 	private:
 		vector<int> _padre;

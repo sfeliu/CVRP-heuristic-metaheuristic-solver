@@ -50,6 +50,82 @@ void Grafo::crearStar(int center){
     }
 }
 
+int Grafo::tomarMinDist(int nodo, list<int>& l){
+	if (l.empty()) {
+		cout << "tomarMinDist rompe en vacio"<< endl;
+	}
+	list<int>::iterator it = l.begin();
+	int min = INF;
+	int nodo_min_dist = *it;
+	while(it != l.end()){
+		//cout << *it << endl;
+		//cout << nodo << endl;
+		int p = peso(*it, nodo);
+		if (p < min) {
+			min = p;
+			nodo_min_dist = *it;
+		}
+		it++;
+	}
+	return *it;
+}
+
+vector< vector<int> > Grafo::GolosoMasCercano(){
+	cout << "Inicio GolosoMasCercano"<< endl;
+	int cant_dep_a_visitar = _puntos.size();
+	std::list<int> l;
+	for(int i = 2; i < cant_dep_a_visitar; i++)
+	{
+		l.push_back(i);
+	}
+	int m;
+	vector< vector<int> > ciclos;
+	cout << cant_dep_a_visitar << endl;
+	while(!l.empty()){
+		cout << "llega"<<endl;
+		
+		vector<int> ciclo(1,1);
+		
+		m = tomarMinDist(1,l);
+		
+		int costo = peso(1,m);
+		
+		int p = 0;
+		while(costo + (2*p)  <= _capacidad && !l.empty()){
+			cout << m<< endl;	
+			if(m == 1){break;}
+			ciclo.push_back(m);
+			l.remove(m);
+			costo = costo + p;
+			
+			int n = tomarMinDist(m,l);
+			p <-peso(m,n);
+			m = n;
+		}
+		ciclo.push_back(1);
+		ciclos.push_back(ciclo);	
+	}
+	
+	return ciclos;
+	cout << ciclos.size()<< endl;
+	int costo_de_rutas = 0;
+	
+	for(int i = 0; i < ciclos.size(); i++)
+	{
+		int costo_ruta = 0;
+		for(int j = 0; j < ciclos[i].size()-1; j++)
+		{
+			costo_ruta += peso(ciclos[i][j+1],ciclos[i][j]);
+			cout << ciclos[i][j] << " ";
+		}
+		cout << ciclos[0][0] << " ";
+		costo_de_rutas += costo_ruta;
+		cout << endl;
+	}
+	cout << costo_de_rutas << endl;
+	
+}
+
 /* Nunca se usa
 void Grafo::new_node(){
 	vector<Node>v;
