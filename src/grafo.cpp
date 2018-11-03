@@ -20,7 +20,7 @@ Grafo::Grafo(TspFile tsp, string mode){
 double Grafo::diffEuclidea(int u, int v){
     double diff_x = _puntos[u].x - _puntos[v].x;
     double diff_y = _puntos[u].y - _puntos[v].y;
-    double peso = round(sqrt(diff_x*diff_x + diff_y*diff_y));
+    double peso = sqrt(diff_x*diff_x + diff_y*diff_y);
     return peso;
 }
 
@@ -853,7 +853,7 @@ bool utiliza_camion(Saving saving, Camion camion){
     return indice_camion == indice_a || indice_camion == indice_b;
 }
 
-void unir_circuito(Camion camion1, Camion camion2, tuple<int,int> unir_vertices){
+void unir_circuito(Camion &camion1, Camion &camion2, tuple<int,int> unir_vertices){
     if(get<0>(unir_vertices) == camion1.circuito[camion1.circuito.size() - 1]){
         reverse(camion1.circuito.begin(),camion1.circuito.end());
     }
@@ -878,10 +878,10 @@ vector<Saving> Grafo::merge_and_update_savings(vector<Saving> savings, vector<Ca
     Camion camion_unido;
     camion_unido = camiones_merge[0];
     Camion camion_temp = camiones_merge[1];
+    int best_vertice_a = get<0>(best_saving.vertices_unidos);
+    int best_vertice_b = get<1>(best_saving.vertices_unidos);
     savings.erase(savings.begin());
     for(int i=0; i<savings.size(); i++){
-        int best_vertice_a = get<0>(best_saving.vertices_unidos);
-        int best_vertice_b = get<1>(best_saving.vertices_unidos);
         int camion_a = get<0>(savings[i].camiones);
         int camion_b = get<1>(savings[i].camiones);
 
@@ -890,12 +890,6 @@ vector<Saving> Grafo::merge_and_update_savings(vector<Saving> savings, vector<Ca
                 savings.erase(savings.begin() + i);
                 i--;
                 continue;
-            }
-            if (camion_temp.id == camion_a) {
-                savings[i].camiones = make_tuple(camion_unido.id, camion_b);
-            }
-            if (camion_temp.id == camion_b) {
-                savings[i].camiones = make_tuple(camion_a, camion_unido.id);
             }
         }
         if(utiliza_vertice(savings[i], best_vertice_a) || utiliza_vertice(savings[i], best_vertice_b)){
@@ -952,17 +946,27 @@ vector<Saving> Grafo::merge_and_update_savings(vector<Saving> savings, vector<Ca
 
             }
         }
+        if(utiliza_camion(savings[i], camion_temp)) {
+            if (camion_temp.id == camion_a) {
+                savings[i].camiones = make_tuple(camion_unido.id, camion_b);
+            }
+            if (camion_temp.id == camion_b) {
+                savings[i].camiones = make_tuple(camion_a, camion_unido.id);
+            }
+        }
     }
 
     camion_unido.merch += camion_temp.merch;
-    camion_unido.distancia += camion_temp.distancia;
+    camion_unido.distancia += camion_temp.distancia - best_saving.ahorro;
     unir_circuito(camion_unido, camion_temp, best_saving.vertices_unidos);
+    camiones.push_back(camion_unido);
     return savings;
 
 }
 
 vector<Saving> Grafo::calcular_savings(vector<Camion> camiones){
     vector<Saving> savings;
+    int contador = 0;
     for(unsigned long i=0; i<camiones.size(); i++) {
         for (unsigned long j = i+1; j < camiones.size(); j++) {
             if (i != j) {
@@ -978,9 +982,12 @@ vector<Saving> Grafo::calcular_savings(vector<Camion> camiones){
                     saving.merch = merch;
                     savings.push_back(saving);
                 }
+                contador++;
             }
         }
     }
+    cout << contador << endl;
+    return savings;
 }
 
 
@@ -993,7 +1000,7 @@ vector<Camion> Grafo::heuristica_savings(){
             vector<int> circuito;
             circuito.push_back(u);
             int merch = _demandas[u];
-            double distancia = peso(_deposito, u);
+            double distancia = peso(_deposito, u)*2;
             camion.circuito = circuito;
             camion.merch = merch;
             camion.distancia = distancia;
@@ -1007,6 +1014,9 @@ vector<Camion> Grafo::heuristica_savings(){
     while(savings.size() != updated_savings.size()){
         savings = updated_savings;
         updated_savings = merge_and_update_savings(savings, camiones);
+        if(updated_savings.empty()){
+            break;
+        }
     }
     return camiones;
 }
