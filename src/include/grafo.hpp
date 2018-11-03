@@ -19,8 +19,6 @@
 #include <chrono>
 #include <limits> 
 
-#define SIZE_PLACE 12
-#define CAPACITY_PLACE 11
 #define INF numeric_limits<double>::infinity()
 using namespace std;
 
