@@ -169,14 +169,15 @@ void Grafo::imprimir(){
 	}
 }
 
-//******************************* HASTA ACA HICE ************************************************+
-bool porPeso(tuple<int,int,double> a, tuple<int,int,double> b){
+
+bool porPeso_list_aristas(tuple<int,int,double> a, tuple<int,int,double> b){
 	return (get<2>(a) < get<2>(b));
 }
 
-bool Grafo::porPeso(tuple<int,double> a, tuple<int,double> b){
-	return (get<1>(a) > get<1>(b));
+bool porPeso_savings(Saving a, Saving b){
+	return (a.ahorro > b.ahorro);
 }
+
 
 void Grafo::init_kruskal_pc(){
 	for(int i = 0; i<(_vertices).size(); i++){
@@ -710,6 +711,7 @@ listAristas diff(listAristas& l1, listAristas& l2){
 	return res;
 }
 
+
 vector<vector<int> > Grafo::clusterizeRadial(){
 	vector<vector<int> > todosClusters;
 	int n = _vertices.size();
@@ -736,4 +738,191 @@ vector<vector<int> > Grafo::clusterizeRadial(){
 		todosClusters.push_back(cluster);
 	}
 	return todosClusters;
+}
+
+
+int get_oposite_vert(Camion camion, int vertice){
+    if(camion.circuito[0] == vertice){
+        return camion.circuito[camion.circuito.size() - 1];
+    }else{
+        return camion.circuito[0];
+    }
+
+}
+
+bool utiliza_vertice(Saving saving, int vertice){
+    int vertice_a = get<0>(saving.vertices_unidos);
+    int vertice_b = get<1>(saving.vertices_unidos);
+    return vertice_a == vertice || vertice_b == vertice;
+}
+
+bool utiliza_vertice(Camion camion, int vertice){
+    int vertice_a = camion.circuito[0];
+    int vertice_b = camion.circuito[camion.circuito.size() - 1];
+    return vertice_a == vertice || vertice_b == vertice;
+}
+
+bool utiliza_camion(Saving saving, Camion camion){
+    int indice_camion = camion.id;
+    int indice_a = get<0>(saving.camiones);
+    int indice_b = get<1>(saving.camiones);
+    return indice_camion == indice_a || indice_camion == indice_b;
+}
+
+void unir_circuito(Camion camion1, Camion camion2, tuple<int,int> unir_vertices){
+    if(get<0>(unir_vertices) == camion1.circuito[camion1.circuito.size() - 1]){
+        reverse(camion1.circuito.begin(),camion1.circuito.end());
+    }
+    if(get<1>(unir_vertices) == camion2.circuito[camion2.circuito.size() - 1]){
+        reverse(camion2.circuito.begin(),camion2.circuito.end());
+    }
+    camion1.circuito.insert(camion1.circuito.end(),camion2.circuito.begin(),camion2.circuito.end());
+}
+
+vector<Saving> Grafo::merge_and_update_savings(vector<Saving> savings, vector<Camion> &camiones){
+    Saving best_saving = savings[0];
+    tuple<int,int> id_camiones_merge = best_saving.camiones;
+    vector<Camion> camiones_merge;
+    for(int i=0; i<camiones.size(); i++){
+        int id_temp = camiones[i].id;
+        if(id_temp == get<0>(id_camiones_merge) || id_temp == get<1>(id_camiones_merge)){
+            camiones_merge.push_back(camiones[i]);
+            camiones.erase(camiones.begin()+i);
+            i--;
+        }
+    }
+    Camion camion_unido;
+    camion_unido = camiones_merge[0];
+    Camion camion_temp = camiones_merge[1];
+    savings.erase(savings.begin());
+    for(int i=0; i<savings.size(); i++){
+        int best_vertice_a = get<0>(best_saving.vertices_unidos);
+        int best_vertice_b = get<1>(best_saving.vertices_unidos);
+        int camion_a = get<0>(savings[i].camiones);
+        int camion_b = get<1>(savings[i].camiones);
+
+        if(utiliza_camion(savings[i], camion_temp)){
+            if(utiliza_camion(savings[i], camion_unido)){
+                savings.erase(savings.begin() + i);
+                i--;
+                continue;
+            }
+            if (camion_temp.id == camion_a) {
+                savings[i].camiones = make_tuple(camion_unido.id, camion_b);
+            }
+            if (camion_temp.id == camion_b) {
+                savings[i].camiones = make_tuple(camion_a, camion_unido.id);
+            }
+        }
+        if(utiliza_vertice(savings[i], best_vertice_a) || utiliza_vertice(savings[i], best_vertice_b)){
+            int vertice_saving = utiliza_vertice(savings[i], best_vertice_a)? best_vertice_a : best_vertice_b;
+            if(utiliza_vertice(camion_temp, vertice_saving)){
+                if(camion_temp.circuito.size() > 1) {
+                    savings.erase(savings.begin() + i);
+                    i--;
+                    continue;
+                }else{
+                    if(savings[i].merch + camion_temp.merch > _capacidad){
+                        savings.erase(savings.begin() + i);
+                        i--;
+                        continue;
+                    }
+                    savings[i].merch += camion_temp.merch;
+                }
+            }else{
+                if(camion_unido.circuito.size() > 1){
+                    savings.erase(savings.begin() + i);
+                    i--;
+                    continue;
+                }else {
+                    if (savings[i].merch + camion_unido.merch > _capacidad) {
+                        savings.erase(savings.begin() + i);
+                        i--;
+                        continue;
+                    }
+                    savings[i].merch += camion_unido.merch;
+                }
+            }
+        }else{
+            int oposite_vert_a = utiliza_vertice(camion_unido, best_vertice_a) ? get_oposite_vert(camion_unido, best_vertice_a) : get_oposite_vert(camion_unido, best_vertice_b);
+            int oposite_vert_b = utiliza_vertice(camion_temp, best_vertice_a) ? get_oposite_vert(camion_temp, best_vertice_a) : get_oposite_vert(camion_temp, best_vertice_b);
+
+            if(utiliza_vertice(savings[i], oposite_vert_a) || utiliza_vertice(savings[i], oposite_vert_b)){
+                int oposite_vertice = utiliza_vertice(savings[i], oposite_vert_a) ? oposite_vert_a : oposite_vert_b;
+
+                if(utiliza_vertice(camion_temp, oposite_vertice)) {
+                    if (savings[i].merch + camion_temp.merch > _capacidad) {
+                        savings.erase(savings.begin() + i);
+                        i--;
+                        continue;
+                    }
+                    savings[i].merch += camion_temp.merch;
+                }else {
+                    if (savings[i].merch + camion_unido.merch > _capacidad) {
+                        savings.erase(savings.begin() + i);
+                        i--;
+                        continue;
+                    }
+                    savings[i].merch += camion_unido.merch;
+                }
+
+            }
+        }
+    }
+
+    camion_unido.merch += camion_temp.merch;
+    camion_unido.distancia += camion_temp.distancia;
+    unir_circuito(camion_unido, camion_temp, best_saving.vertices_unidos);
+    return savings;
+
+}
+
+vector<Saving> Grafo::calcular_savings(vector<Camion> camiones){
+    vector<Saving> savings;
+    for(unsigned long i=0; i<camiones.size(); i++) {
+        for (unsigned long j = i+1; j < camiones.size(); j++) {
+            if (i != j) {
+
+                Saving saving;
+                double ahorro = peso(camiones[i].circuito[0], _deposito) + peso(camiones[j].circuito[0], _deposito) -
+                                peso(camiones[i].circuito[0], camiones[j].circuito[0]);
+                int merch = camiones[i].merch + camiones[j].merch;
+                if (ahorro > 0 && merch <= _capacidad) {
+                    saving.ahorro = ahorro;
+                    saving.camiones = make_tuple(camiones[i].id, camiones[j].id);
+                    saving.vertices_unidos = make_tuple(camiones[i].circuito[0], camiones[j].circuito[0]);
+                    saving.merch = merch;
+                    savings.push_back(saving);
+                }
+            }
+        }
+    }
+}
+
+
+vector<Camion> Grafo::heuristica_savings(){
+    vector<Camion> camiones;
+    for(int u = 0; u<_vertices.size(); u++){
+        if(_deposito != u) {
+            Camion camion = Camion();
+            camion.id = u;
+            vector<int> circuito;
+            circuito.push_back(u);
+            int merch = _demandas[u];
+            double distancia = peso(_deposito, u);
+            camion.circuito = circuito;
+            camion.merch = merch;
+            camion.distancia = distancia;
+            camiones.push_back(camion);
+        }
+    }
+    vector<Saving> savings = calcular_savings(camiones);
+    // De mayor a menor
+    sort(savings.begin(),savings.end(), porPeso_savings);
+    vector<Saving> updated_savings = merge_and_update_savings(savings, camiones);
+    while(savings.size() != updated_savings.size()){
+        savings = updated_savings;
+        updated_savings = merge_and_update_savings(savings, camiones);
+    }
+    return camiones;
 }

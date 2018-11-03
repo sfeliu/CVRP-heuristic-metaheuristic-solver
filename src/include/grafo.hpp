@@ -29,6 +29,23 @@ struct Coordenadas
 	};
 
 
+struct Camion
+    {
+        int id;
+        vector<int> circuito;
+        int merch;
+        double distancia;
+    };
+
+
+struct Saving{
+    tuple<int,int> camiones;
+    tuple<int,int> vertices_unidos;
+    double ahorro;
+    int merch;
+};
+
+
 struct TspFile
 {
     int capacidad;
@@ -39,7 +56,7 @@ struct TspFile
 
 typedef vector< tuple <int,int,double> > listAristas;
 
-class Comparador 
+class Comparador
 {
 public:
 	int operator()(tuple<int,double> t ,tuple<int,double> s){
@@ -74,6 +91,9 @@ class Grafo
 		//int find_pc(int id);
 		void init_kruskal_pc();
 		void imprimir_pos();
+		vector<Saving> calcular_savings(vector<Camion> camiones);
+		vector<Camion> heuristica_savings();
+        vector<Saving> merge_and_update_savings(vector<Saving> savings, vector<Camion> &camiones);
 		//int find(int id);
 		//void init_kruskal();
 		//void conjunction(int u, int v);
@@ -99,9 +119,7 @@ class Grafo
 		int _capacidad;
 		int _deposito;
 
-		bool Grafo::porPeso(tuple<int,double> a, tuple<int,double> b);
 		double& peso(int u, int v);
-		bool porPeso(int u, int v);
         void crearKn();
 		void crearStar(int center);
 		//int floydWarshall(vector< vector<int> > &distancias);
