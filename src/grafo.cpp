@@ -794,6 +794,7 @@ vector<vector<int> > Grafo::clusterizeRadial(){
 
 	vector<tuple<int,double> > clientes;
 	for (int i = 0; i < n; i++){
+		if (i == _deposito) continue;
 		clientes.push_back(tuple<int,double> (i,peso(i,_deposito)));
 	}
 
@@ -805,14 +806,21 @@ vector<vector<int> > Grafo::clusterizeRadial(){
        });
 	// sort(clientes.begin(),clientes.end(),porPeso);
 
+	vector<int> cluster;
+	int capacidadCamion = _capacidad;
 	for (auto c : clientes){
-		if (get<0>(c) == _deposito) continue;
-		vector<int> cluster;
-		while (_capacidad >= _demandas[get<0>(c)]){
+		int demandaC = _demandas[get<0>(c)];
+		if (capacidadCamion >= demandaC){
+			capacidadCamion -= demandaC;
+			cluster.push_back(get<0>(c));
+		} else {
+			todosClusters.push_back(cluster);
+			cluster.clear();
+			capacidadCamion = _capacidad - demandaC;
 			cluster.push_back(get<0>(c));
 		}
-		todosClusters.push_back(cluster);
 	}
+	todosClusters.push_back(cluster);
 	return todosClusters;
 }
 
