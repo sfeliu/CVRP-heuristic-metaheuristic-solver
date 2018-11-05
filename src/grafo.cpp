@@ -826,9 +826,27 @@ vector<vector<int> > Grafo::clusterizeRadial(){
 	return todosClusters;
 }
 
-vector<int> Grafo::NearestNeighbourTSP(vector<vector<int> > &clusters, int i){
-	for (int cliente : clusters[i]){
+vector<int> Grafo::NearestNeighbourTSP(vector<int> cluster)
+{
+	int n = cluster.size();
+	// std::vector<int> auxUsados;
+	std::vector<int> resultado;
+
+	int clienteActual = cluster[0];
+	resultado.push_back(clienteActual);
+	
+    cluster.erase(std::remove(cluster.begin(), cluster.end(), clienteActual), cluster.end());
+
+	for (int i = 0; i < n; i++){
+		auto min = std::min_element(begin(cluster), end(cluster),
+									[&](const int &a, const int &b) {
+										return peso(a,clienteActual) < peso(b,clienteActual);
+									});
+		
+		resultado.push_back(*min);
+	    cluster.erase(std::remove(cluster.begin(), cluster.end(), *min), cluster.end());
 	}
+	return resultado;
 }
 
 int get_oposite_vert(Camion camion, int vertice){
