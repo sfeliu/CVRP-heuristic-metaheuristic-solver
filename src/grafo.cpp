@@ -824,6 +824,10 @@ vector<vector<int> > Grafo::clusterizeRadial(){
 	return todosClusters;
 }
 
+vector<int> Grafo::NearestNeighbourTSP(vector<vector<int> > &clusters, int i){
+	for (int cliente : clusters[i]){
+	}
+}
 
 int get_oposite_vert(Camion camion, int vertice){
     if(camion.circuito[0] == vertice){
