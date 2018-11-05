@@ -55,75 +55,77 @@ int Grafo::tomarMinDist(int nodo, list<int>& l){
 		cout << "tomarMinDist rompe en vacio"<< endl;
 	}
 	list<int>::iterator it = l.begin();
-	int min = INF;
 	int nodo_min_dist = *it;
+  int min = peso(*it,nodo);
 	while(it != l.end()){
-		//cout << *it << endl;
-		//cout << nodo << endl;
-		int p = peso(*it, nodo);
+    double p = peso(*it,nodo);
+		//cout <<"peso: "<< p<< " iterador: "<< *it<< endl;
 		if (p < min) {
 			min = p;
 			nodo_min_dist = *it;
 		}
 		it++;
 	}
-	return *it;
+	return nodo_min_dist;
 }
 
 vector< vector<int> > Grafo::GolosoMasCercano(){
 	cout << "Inicio GolosoMasCercano"<< endl;
 	int cant_dep_a_visitar = _puntos.size();
-	std::list<int> l;
+	std::list<int> ids;
 	for(int i = 2; i < cant_dep_a_visitar; i++)
 	{
-		l.push_back(i);
+		ids.push_back(i);
 	}
+  ids.remove(_deposito);
 	int m;
 	vector< vector<int> > ciclos;
-	cout << cant_dep_a_visitar << endl;
-	while(!l.empty()){
-		cout << "llega"<<endl;
-		
-		vector<int> ciclo(1,1);
-		
-		m = tomarMinDist(1,l);
-		
-		int costo = peso(1,m);
-		
-		int p = 0;
-		while(costo + (2*p)  <= _capacidad && !l.empty()){
-			cout << m<< endl;	
-			if(m == 1){break;}
+  //cout << cant_dep_a_visitar << endl;
+  int j = 0;
+	while(!ids.empty()){
+		j++;
+		vector<int> ciclo = {_deposito};
+
+		m = tomarMinDist(_deposito,ids);
+		cout <<"vecino mas cercano "<< j << " es: "<< m<<" con peso: " << peso(m,_deposito)<<endl;
+
+		int distancia = peso(_deposito,m);
+
+		int demanda = 0;
+    int k = 0;
+		while(_demandas[m] + demanda  <= _capacidad && !ids.empty()){
+			cout << "cicloInterno : " << k << endl;
+      k++;
 			ciclo.push_back(m);
-			l.remove(m);
-			costo = costo + p;
-			
-			int n = tomarMinDist(m,l);
-			p <-peso(m,n);
-			m = n;
+			ids.remove(m);
+			demanda = demanda + _demandas[m];
+			cout <<"demanda: "<< demanda-_demandas[m]<< endl;
+      if(!ids.empty()){
+        m = tomarMinDist(m,ids);
+      }
+			cout <<"viejo: "<< m<< endl;
+			cout <<"nueva_demanda: "<< demanda<< endl;
+			cout << endl;
 		}
-		ciclo.push_back(1);
-		ciclos.push_back(ciclo);	
+		ciclo.push_back(_deposito);
+		ciclos.push_back(ciclo);
 	}
-	
-	return ciclos;
 	cout << ciclos.size()<< endl;
 	int costo_de_rutas = 0;
-	
 	for(int i = 0; i < ciclos.size(); i++)
 	{
 		int costo_ruta = 0;
 		for(int j = 0; j < ciclos[i].size()-1; j++)
 		{
 			costo_ruta += peso(ciclos[i][j+1],ciclos[i][j]);
-			cout << ciclos[i][j] << " ";
+			cout << ciclos[i][j]+1 << " ";
 		}
-		cout << ciclos[0][0] << " ";
+		cout << ciclos[0][0]+1 << " ";
 		costo_de_rutas += costo_ruta;
 		cout << endl;
 	}
 	cout << costo_de_rutas << endl;
-	
+	return ciclos;
 }
 
 /* Nunca se usa
