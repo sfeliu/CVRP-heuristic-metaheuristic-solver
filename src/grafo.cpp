@@ -845,6 +845,7 @@ vector<int> Grafo::NearestNeighbourTSP(vector<int> cluster)
 		
 		resultado.push_back(*min);
 	    cluster.erase(std::remove(cluster.begin(), cluster.end(), *min), cluster.end());
+		clienteActual = *min;
 	}
 	return resultado;
 }
