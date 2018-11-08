@@ -78,3 +78,37 @@ TspFile readTsp(char *filepath){
     file.close();
     return res;
 }
+
+
+void save_test(Grafo g, string full_filepath, string test, vector<Camion> camiones){
+
+    vector<string> filepath = split_line(full_filepath, '/');
+    string filename_ext = filepath[filepath.size() - 1];
+    string filename = split_line(filename_ext, '.')[0];
+    full_filepath.replace(full_filepath.find("tests_cases"), full_filepath.length()-1, "");
+    ofstream outputFile(full_filepath + "test_results/" + filename + "_" + test + "_n.cvs");
+    vector<Coordenadas> puntos = g.puntos();
+    for (auto &punto : puntos) {
+        outputFile << punto.x << "," << punto.y << endl;
+    }
+    outputFile.close();
+    ofstream resultFile(full_filepath + "test_results/" + filename + "_" + test + ".cvs");
+    resultFile << camiones.size() << endl;
+    double costo_total = 0;
+    vector<vector<int>> circuitos;
+
+    for (auto &camion : camiones) {
+        circuitos.push_back(camion.circuito);
+    }
+
+    for(int i=0; i<circuitos.size(); i++){
+        resultFile << g.deposito() << ",";
+        for (int cliente : circuitos[i]) {
+            resultFile << cliente << ",";
+        }
+        resultFile << g.deposito() << endl;
+        costo_total += camiones[i].distancia;
+    }
+    resultFile << costo_total << endl;
+    resultFile.close();
+}

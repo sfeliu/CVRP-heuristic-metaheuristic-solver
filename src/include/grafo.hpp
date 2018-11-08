@@ -112,6 +112,8 @@ class Grafo
 		int tomarMinDist(int nodo, list<int>& l);
 		vector<vector <int> > clusterizeRadial();
 		vector<int> NearestNeighbourTSP(vector<int> cluster);
+		vector<Camion> generateCamiones(vector<vector<int>> circuitos);
+		int deposito();
 	private:
 		vector<int> _padre;
 		vector<int> _altura;

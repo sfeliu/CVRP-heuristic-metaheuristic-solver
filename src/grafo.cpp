@@ -879,11 +879,13 @@ bool utiliza_camion(Saving saving, Camion camion){
 }
 
 void unir_circuito(Camion &camion1, Camion &camion2, tuple<int,int> unir_vertices){
-    if(get<0>(unir_vertices) == camion1.circuito[camion1.circuito.size() - 1]){
+    if(get<0>(unir_vertices) == camion1.circuito[0] ||
+       get<1>(unir_vertices) == camion1.circuito[0]){
         reverse(camion1.circuito.begin(),camion1.circuito.end());
     }
-    if(get<1>(unir_vertices) == camion2.circuito[camion2.circuito.size() - 1]){
-        reverse(camion2.circuito.begin(),camion2.circuito.end());
+    if(get<0>(unir_vertices) == camion2.circuito[camion2.circuito.size() - 1] ||
+       get<1>(unir_vertices) == camion2.circuito[camion2.circuito.size() - 1]) {
+        reverse(camion2.circuito.begin(), camion2.circuito.end());
     }
     camion1.circuito.insert(camion1.circuito.end(),camion2.circuito.begin(),camion2.circuito.end());
 }
@@ -925,12 +927,12 @@ vector<Saving> Grafo::merge_and_update_savings(vector<Saving> savings, vector<Ca
                     i--;
                     continue;
                 }else{
-                    if(savings[i].merch + camion_temp.merch > _capacidad){
+                    if(savings[i].merch + camion_unido.merch > _capacidad){
                         savings.erase(savings.begin() + i);
                         i--;
                         continue;
                     }
-                    savings[i].merch += camion_temp.merch;
+                    savings[i].merch += camion_unido.merch;
                 }
             }else{
                 if(camion_unido.circuito.size() > 1){
@@ -938,12 +940,12 @@ vector<Saving> Grafo::merge_and_update_savings(vector<Saving> savings, vector<Ca
                     i--;
                     continue;
                 }else {
-                    if (savings[i].merch + camion_unido.merch > _capacidad) {
+                    if (savings[i].merch + camion_temp.merch > _capacidad) {
                         savings.erase(savings.begin() + i);
                         i--;
                         continue;
                     }
-                    savings[i].merch += camion_unido.merch;
+                    savings[i].merch += camion_temp.merch;
                 }
             }
         }else{
@@ -954,19 +956,19 @@ vector<Saving> Grafo::merge_and_update_savings(vector<Saving> savings, vector<Ca
                 int oposite_vertice = utiliza_vertice(savings[i], oposite_vert_a) ? oposite_vert_a : oposite_vert_b;
 
                 if(utiliza_vertice(camion_temp, oposite_vertice)) {
-                    if (savings[i].merch + camion_temp.merch > _capacidad) {
-                        savings.erase(savings.begin() + i);
-                        i--;
-                        continue;
-                    }
-                    savings[i].merch += camion_temp.merch;
-                }else {
                     if (savings[i].merch + camion_unido.merch > _capacidad) {
                         savings.erase(savings.begin() + i);
                         i--;
                         continue;
                     }
                     savings[i].merch += camion_unido.merch;
+                }else {
+                    if (savings[i].merch + camion_temp.merch > _capacidad) {
+                        savings.erase(savings.begin() + i);
+                        i--;
+                        continue;
+                    }
+                    savings[i].merch += camion_temp.merch;
                 }
 
             }
@@ -1042,6 +1044,30 @@ vector<Camion> Grafo::heuristica_savings(){
         if(updated_savings.empty()){
             break;
         }
+    }
+    return camiones;
+}
+
+int Grafo::deposito() {
+    return _deposito;
+}
+
+vector<Camion> Grafo::generateCamiones(vector<vector<int>> circuitos) {
+    vector<Camion> camiones;
+    for(int i=0; i<circuitos.size(); i++){
+        Camion camion = Camion();
+        camion.distancia = peso(_deposito, circuitos[i][0]);
+        camion.merch = 0;
+        camion.id = i;
+        for(int j=0; j<circuitos[i].size() - 1; j++){
+            camion.circuito.push_back(circuitos[i][j]);
+            camion.distancia += peso(circuitos[i][j], circuitos[i][j+1]);
+            camion.merch += _demandas[circuitos[i][j]];
+        }
+        camion.circuito.push_back(circuitos[i][circuitos[i].size()-1]);
+        camion.distancia += peso(circuitos[i][circuitos[i].size()-1], _deposito);
+        camion.merch += _demandas[circuitos[i][circuitos[i].size()-1]];
+        camiones.push_back(camion);
     }
     return camiones;
 }

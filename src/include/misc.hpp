@@ -12,5 +12,6 @@ listAristas diff(listAristas& l1, listAristas& l2);
 */
 TspFile readTsp(char *filepath);
 vector<string> split_line(string &line, char delim);
+void save_test(Grafo g, string full_filepath, string test, vector<Camion> camiones);
 
 #endif
