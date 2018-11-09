@@ -135,7 +135,107 @@ void Grafo::new_node(){
 }
 */
 
-/* Nunca se usa
+bool porPeso(tuple<int,double> a, tuple<int,double> b){
+	return (get<1>(a) < get<1>(b));
+}
+
+
+vector< tuple<int,double> > Grafo::getAngulos(){ //complejidad O(V)
+	vector< tuple<int,double> > angulos(_vertices.size());
+	// cout<< "ID: "<< _deposito << " | "<< "x: "<< _puntos[_deposito].x << " | "<< "y: " << _puntos[_deposito].y << " | peso: "<< diffEuclidea(_deposito,_deposito)<< endl;
+	for(int i = 0; i < _vertices.size(); i++){
+		if(i == _deposito){i++;}
+		double y1 = _puntos[i].y;
+		double y2 = _puntos[_deposito].y;
+		double x1 = _puntos[i].x;
+		double x2 = _puntos[_deposito].x;
+		double peso = diffEuclidea(_deposito,i);
+		double arcsin = asin((y1 - y2)/peso);
+		double arccos = acos((x1 - x2)/peso);
+		if(y1-y2 < 0){
+			angulos[i] = tuple<int,double>(i,360.0-(arccos * 180.0/3.14159265));	
+		}else{
+			angulos[i] = tuple<int,double>(i,(arccos * 180.0)/3.14159265);	
+		}		
+	}
+    angulos.erase(angulos.begin() + _deposito);
+	return angulos;
+}
+
+void Grafo::sweep(vector< vector <int> >& clusters){ //complejidad O(V*log(V))
+	vector< tuple<int,double> > angulos = getAngulos();
+	sort(angulos.begin(), angulos.end(), porPeso);
+	for(int i = 0; i < angulos.size(); i++){
+		// cout << "ID: " << get<0>(angulos[i]) << " | Degree: " << get<1>(angulos[i]) << endl;
+	}
+	int contenido = 0;
+	int clusterNum = 0;
+	int i = 0;
+	while(i < angulos.size()){
+		contenido = 0;
+		vector<int> v;
+		clusters.push_back(v);
+		while(contenido + _demandas[get<0>(angulos[i])] < _capacidad && i<angulos.size()){
+			clusters[clusterNum].push_back(get<0>(angulos[i]));
+			contenido = contenido + _demandas[get<0>(angulos[i])];
+			i++;
+		}
+		clusterNum++;
+	}
+	return;
+}
+
+
+void Grafo::DFS( vector<int>& inorderWalk, int& actual, int padre) { // requiere que g sea digrafo o tengo que sacar las aristas de vuelta en un grafo
+	inorderWalk.push_back(actual);
+	int temp_actual = actual;
+	int temp_padre = padre;
+	for(int j = 0; j < _vertices[actual].size(); j++){
+		if(_vertices[actual][j].id != padre){
+			padre = actual;
+			DFS(inorderWalk,_vertices[actual][j].id,padre);	
+			actual = temp_actual;
+			padre = temp_padre;
+		}
+	}
+}
+
+
+vector<int> Grafo::solveTSP() {
+	listAristas agm = prim();
+	Grafo g(agm, _vertices.size());
+	g.borrar_edge(0,0);
+	vector<int> inorderWalk;
+	int nodo = 0;
+	g.DFS(inorderWalk, nodo, nodo);
+	return inorderWalk;
+}
+
+vector< vector<int> > Grafo::solveVSP(){
+	vector< vector<int> > v;
+	sweep(v);
+	return routear(v);
+}
+
+vector< vector<int> > Grafo::routear( vector< vector<int> > clusters) {
+	int cantClusters = clusters.size();
+	vector< vector<int> > rutas;
+	for(int i = 0; i < cantClusters; i++){
+		vector<Coordenadas> coordenadas_cluster;
+		// clusters[i].push_back(_deposito);
+		for(int j = 0; j < clusters[i].size(); j++){
+			coordenadas_cluster.push_back(_puntos[clusters[i][j]]);
+		}
+		Grafo g1(coordenadas_cluster);
+		vector<int> l = g1.solveTSP();
+		vector<int> copy = clusters[i];
+		for(int k = 0; k < l.size(); k++){
+			clusters[i][k] = copy[l[k]];
+		}
+	}
+	return clusters;
+}
+
 Grafo::Grafo(vector<Coordenadas> puntos) {
     unsigned long n = puntos.size();
     this->new_node(n);
@@ -146,16 +246,16 @@ Grafo::Grafo(vector<Coordenadas> puntos) {
                 double diff_y = puntos[i].y - puntos[j].y;
                 double peso = sqrt(diff_x*diff_x + diff_y*diff_y);
                 this->add_edge(i,j,peso);
-                if((i == 12 || i == 16)&&(j == 12 || j == 16)){
-                    cout << "i=(" << puntos[i].x << "," << puntos[i].y << ");j=(" << puntos[j].x << "," << puntos[j].y << ") |" << "diff_x="<< diff_x << ";diff_y=" << diff_y <<";peso "<< peso << endl;
-                    cout << "abs(puntos[i].x)=" << abs(puntos[i].x) << "|abs(puntos[j].x)=" << abs(puntos[j].x) <<endl;
-                }
+                // if((i == 12 || i == 16)&&(j == 12 || j == 16)){
+                //     cout << "i=(" << puntos[i].x << "," << puntos[i].y << ");j=(" << puntos[j].x << "," << puntos[j].y << ") |" << "diff_x="<< diff_x << ";diff_y=" << diff_y <<";peso "<< peso << endl;
+                //     cout << "abs(puntos[i].x)=" << abs(puntos[i].x) << "|abs(puntos[j].x)=" << abs(puntos[j].x) <<endl;
+                // }
             }
         }
     }
     _puntos = puntos;
 }
-*/
+
 
 /* No se usa
 Grafo::Grafo(vector<vector<double>> pesos) {
@@ -168,14 +268,13 @@ Grafo::Grafo(vector<vector<double>> pesos) {
     }
 }
  */
-/* No se usa
 Grafo::Grafo(listAristas l, int cantNodos) {
     this->new_node(cantNodos);
     for(int i =0; i<l.size(); i++){
         this->add_edge(get<0>(l[i]),get<1>(l[i]),get<2>(l[i]));
     }
 }
-*/
+
 
 void Grafo::new_node(int n){
 	for(int i = 0; i < n; i++){
@@ -251,6 +350,7 @@ void Grafo::imprimir(){
 bool porPeso_list_aristas(tuple<int,int,double> a, tuple<int,int,double> b){
 	return (get<2>(a) < get<2>(b));
 }
+
 
 bool porPeso_savings(Saving a, Saving b){
 	return (a.ahorro > b.ahorro);
@@ -354,7 +454,7 @@ listAristas Grafo::kruskal(listAristas aristas){
 }
 */
 
-/*
+
 listAristas Grafo::prim(){
 	listAristas padre;
 	vector<double> distancia;
@@ -388,7 +488,7 @@ listAristas Grafo::prim(){
 	}
 	return padre;
 }
-*/
+
 
 /*
 void sumaCamino(listAristas l, int u, int v, double &suma, int &pasos, int &vecinos){

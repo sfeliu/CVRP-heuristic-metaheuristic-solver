@@ -77,9 +77,9 @@ class Grafo
 	public:
 		vector<Coordenadas>& puntos();
 		Grafo(TspFile tsp, string mode);
-		//Grafo(vector<Coordenadas> puntos); // constructor de grafo Kn con coordenadas
+		Grafo(vector<Coordenadas> puntos); // constructor de grafo Kn con coordenadas
 		//Grafo(vector<vector<double>> pesos); // constructor de grafo Kn con matriz de pesos
-		//Grafo(listAristas l, int cantNodos); // Contructor con listaAristas.
+		Grafo(listAristas l, int cantNodos); // Contructor con listaAristas.
 		bool existe(int u, int v);
 		void imprimir();
 		//void new_node();
@@ -100,19 +100,26 @@ class Grafo
 		//listAristas obtener_vecinos(int u, int v, double cant_vecinos);
 		//listAristas kruskal(listAristas aristas);
 		//listAristas kruskal_pc(listAristas aristas);
-		//listAristas prim();
+		listAristas prim();
 		//listAristas convert();
 
 		//void cicloNegativoFW();
 		//void cicloNegativoBF();
 
         //void logPesos();
+        vector< tuple<int,double> > getAngulos(); //complejidad O(V)
+		void sweep(vector< vector <int> >& clusters); //complejidad O(V*log(V))
+		void DFS( vector<int>& inorderWalk, int& actual, int padre); // requiere que g sea digrafo o tengo que sacar las aristas de vuelta en un grafo
+		vector<int> solveTSP();
+		vector< vector<int> > solveVSP();
+		vector< vector<int> > routear( vector< vector<int> > clusters);
+
         double diffEuclidea(int u, int v);
 		vector< vector<int> > GolosoMasCercano();
 		int tomarMinDist(int nodo, list<int>& l);
 		vector<vector <int> > clusterizeRadial();
 		vector<int> NearestNeighbourTSP(vector<int> cluster);
-		vector<Camion> generateCamiones(vector<vector<int>> circuitos);
+		vector<Camion> generateCamiones(vector< vector<int> > circuitos);
 		int deposito();
 	private:
 		vector<int> _padre;
