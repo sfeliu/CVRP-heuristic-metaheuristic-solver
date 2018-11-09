@@ -121,7 +121,9 @@ class Grafo
 		vector<int> NearestNeighbourTSP(vector<int> cluster);
 		vector<Camion> generateCamiones(vector< vector<int> > circuitos);
 		int deposito();
-	private:
+        vector<vector<int> > NNRadial();
+
+        private:
 		vector<int> _padre;
 		vector<int> _altura;
 		vector< vector<Node> > _vertices;

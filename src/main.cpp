@@ -17,6 +17,13 @@ int main(int argc, char** argv){
 	    vector <Camion> resultado = g.generateCamiones(clusters);
 	    save_test(g,filepath,"sweep",resultado);
     }
+    if(mode==2) {
+        Grafo g = Grafo(tsp, "kn");
+        vector<vector<int> > clusters = g.NNRadial();
+        vector<Camion> resultado = g.generateCamiones(clusters);
+        save_test(g, filepath,
+                  "radial", resultado);
+    }
 
     return 0;
 }

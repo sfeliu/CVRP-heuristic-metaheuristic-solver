@@ -926,6 +926,16 @@ vector<vector<int> > Grafo::clusterizeRadial(){
 	return todosClusters;
 }
 
+vector<vector<int> > Grafo::NNRadial(){
+	vector<vector<int> > clusters;
+	clusters = clusterizeRadial();
+	vector<vector<int> > result;
+	for (const auto &cluster : clusters) {
+		result.push_back(NearestNeighbourTSP(cluster));
+	}
+	return result;
+}
+
 vector<int> Grafo::NearestNeighbourTSP(vector<int> cluster)
 {
 	int n = cluster.size();
