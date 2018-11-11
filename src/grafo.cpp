@@ -929,9 +929,10 @@ vector<vector<int> > Grafo::clusterizeRadial(){
 vector<vector<int> > Grafo::NNRadial(){
 	vector<vector<int> > clusters;
 	clusters = clusterizeRadial();
+	int n = clusters.size();
 	vector<vector<int> > result;
-	for (const auto &cluster : clusters) {
-		result.push_back(NearestNeighbourTSP(cluster));
+	for (int i = 0; i < n; i++) {
+		result.push_back(NearestNeighbourTSP(clusters[i]));
 	}
 	return result;
 }
@@ -947,7 +948,7 @@ vector<int> Grafo::NearestNeighbourTSP(vector<int> cluster)
 	
     cluster.erase(std::remove(cluster.begin(), cluster.end(), clienteActual), cluster.end());
 
-	for (int i = 0; i < n; i++){
+	for (int i = 1; i < n; i++){
 		auto min = std::min_element(begin(cluster), end(cluster),
 									[&](const int &a, const int &b) {
 										return peso(a,clienteActual) < peso(b,clienteActual);
