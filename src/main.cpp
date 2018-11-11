@@ -13,7 +13,7 @@ int main(int argc, char** argv){
     }
     if(mode==1){
         Grafo g = Grafo(tsp, "kn");
-	    vector< vector<int> > clusters = g.solveVSP();
+	    vector< vector<int> > clusters = g.solveVSP_conTwoOpt2(); //solveVSP no usa ninguna heuristica, solveVSP_conTwoOpt usa 2opt pero mira solo una vecindad, solveVSP_conTwoOpt2 mira todas las vecindades.
 	    vector <Camion> resultado = g.generateCamiones(clusters);
 	    save_test(g,filepath,"sweep",resultado);
     }

@@ -107,6 +107,14 @@ class Grafo
 		//void cicloNegativoBF();
 
         //void logPesos();
+		vector< vector<int> > solveVSP_conTwoOpt2();
+		vector< vector<int> > routear_conTwoOpt2( vector< vector<int> > clusters);
+		vector< vector<int> > routear_conTwoOpt( vector< vector<int> > clusters);
+		vector<int> TwoOptCompleto(vector<int> ruta);
+		vector<int> TwoOptswap(vector<int> ruta, int i, int k);
+		double calcularDistancia(vector<int> ruta);
+		vector< vector<int> > solveVSP_conTwoOpt();
+
         vector< tuple<int,double> > getAngulos(); //complejidad O(V)
 		void sweep(vector< vector <int> >& clusters); //complejidad O(V*log(V))
 		void DFS( vector<int>& inorderWalk, int& actual, int padre); // requiere que g sea digrafo o tengo que sacar las aristas de vuelta en un grafo
