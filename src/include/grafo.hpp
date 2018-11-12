@@ -19,6 +19,7 @@
 #include <chrono>
 #include <limits> 
 #include <list>
+#include <ctime>
 #define INF numeric_limits<int>::infinity()
 using namespace std;
 
@@ -37,6 +38,12 @@ struct Camion
         double distancia;
     };
 
+
+struct Resultado
+    {
+        vector<Camion> camiones;
+        double costo_total;
+    };
 
 struct Saving{
     tuple<int,int> camiones;
@@ -126,6 +133,10 @@ class Grafo
 		vector<int> solveTSP();
 		vector< vector<int> > solveVSP();
 		vector< vector<int> > routear( vector< vector<int> > clusters);
+		vector<Camion> simulatedAnnealing(vector<Camion> res_inicial, int picking_mode, int enfriar_mode, int vecindario_mode);
+		Resultado calcular_resultado(vector<Camion> res);
+		Resultado calcular_resultado(vector<vector<int>> res);
+		vector<Resultado> get_vecindario(Resultado res, int mode);
 
         double diffEuclidea(int u, int v);
 		vector< vector<int> > GolosoMasCercano();

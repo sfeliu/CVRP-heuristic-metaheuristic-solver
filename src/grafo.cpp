@@ -518,6 +518,11 @@ bool porPeso_savings(Saving a, Saving b){
 }
 
 
+bool porPeso_resultados(Resultado a, Resultado b){
+	return (a.costo_total > b.costo_total);
+}
+
+
 void Grafo::init_kruskal_pc(){
 	for(int i = 0; i<(_vertices).size(); i++){
 		_padre.push_back(i);
@@ -1342,4 +1347,92 @@ vector<Camion> Grafo::generateCamiones(vector<vector<int>> circuitos) {
         camiones.push_back(camion);
     }
     return camiones;
+}
+
+
+Resultado Grafo::calcular_resultado(vector<Camion> res){
+	Resultado resultado;
+	resultado.camiones = res;
+	resultado.costo_total = 0;
+	for(auto const camion : res){
+		resultado.costo_total += camion.distancia;
+	}
+	return resultado;
+}
+
+
+Resultado Grafo::calcular_resultado(vector<vector<int>> res){
+	vector<Camion> camiones = generateCamiones(res);
+	return calcular_resultado(camiones);
+}
+
+
+vector<Resultado> Grafo::get_vecindario(Resultado res, int mode){
+    if(mode == 0){
+
+    }
+}
+
+
+double enfriar(double temp, int mode){
+	if(mode == 0){
+		temp = temp - temp/10;
+	}
+
+	return temp;
+}
+
+
+Resultado take_res(vector<Resultado> vecindario, vector<Resultado> vecinos_ya_vistos, int mode){
+	if(mode == 0) {
+		sort(vecindario.begin(), vecindario.end(), porPeso_resultados);
+		for(auto vecino : vecindario){
+			if(find(vecinos_ya_vistos.begin(), vecinos_ya_vistos.end(), vecino) == vecinos_ya_vistos.end()){
+				return vecino;
+			}
+		}
+	}
+	return vecindario[0];
+}
+
+
+double get_random(){
+	srand(time(NULL));
+	return rand() % 10000 / 10000;
+}
+
+
+vector<Camion> Grafo::simulatedAnnealing(vector<Camion> res_inicial, int picking_mode, int enfriar_mode, int vecindario_mode) {
+	Resultado best_res = calcular_resultado(res_inicial);
+	Resultado res_actual = best_res;
+	vector<Resultado> vecindario = get_vecindario(best_res, vecindario_mode);
+	sort(vecindario.begin(),vecindario.end(), porPeso_resultados);
+	double max_temp = vecindario[0].costo_total - res_actual.costo_total;
+	double min_temp = vecindario[vecindario.size()-1].costo_total - res_actual.costo_total;
+	double temperature = max_temp;
+	bool nuevo_res = false;
+	vector<Resultado> vecinos_ya_vistos;
+	res_actual = take_res(vecindario, vecinos_ya_vistos, picking_mode);
+	Resultado res_temporal = res_actual;
+	double diferencia;
+
+	while(temperature > min_temp){
+		if(nuevo_res) {
+			vecindario = get_vecindario(res_actual, vecindario_mode);
+			vecinos_ya_vistos.clear();
+		}else{
+			vecinos_ya_vistos.push_back(res_temporal);
+		}
+		res_temporal = take_res(vecindario, vecinos_ya_vistos, picking_mode);
+		diferencia = res_temporal.costo_total - res_actual.costo_total;
+		if(diferencia >= 0 || exp((-diferencia)/temperature) > get_random()){
+			res_actual = res_temporal;
+			nuevo_res = true;
+			if(res_actual.costo_total <= best_res.costo_total){
+				best_res = res_actual;
+			}
+		}
+		temperature = enfriar(temperature, enfriar_mode);
+	}
+    return vector<Camion>();
 }
