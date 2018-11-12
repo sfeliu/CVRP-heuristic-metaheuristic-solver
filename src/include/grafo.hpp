@@ -107,6 +107,11 @@ class Grafo
 		//void cicloNegativoBF();
 
         //void logPesos();
+
+		vector< vector< vector< int > > > vecindadCompletaInicialTwoOpt();
+		vector< vector<int> > vecindadUnaRutaTwoOpt(vector<int> ruta);
+		vector< vector< vector< int > > > vecindadCompletaTwoOpt(vector< vector<int> > clusters);
+
 		vector< vector<int> > solveVSP_conTwoOpt2();
 		vector< vector<int> > routear_conTwoOpt2( vector< vector<int> > clusters);
 		vector< vector<int> > routear_conTwoOpt( vector< vector<int> > clusters);

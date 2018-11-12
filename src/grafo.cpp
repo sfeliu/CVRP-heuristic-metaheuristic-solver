@@ -209,65 +209,28 @@ void Grafo::DFS( vector<int>& inorderWalk, int& actual, int padre) { // requiere
 	}
 }
 
-
-
-vector<int> Grafo::TwoOptswap(vector<int> ruta, int i, int k){
-	vector<int> ruta_nueva(ruta.begin(), ruta.begin() + i);
-	// print_vec(ruta);
-	// print_vec(ruta_nueva);
-	vector<int> final(ruta.begin()+k,ruta.end());
-	for(int j = k-1; j >= i; j--){
-		ruta_nueva.push_back(ruta[j]);
-	}
-	ruta_nueva.insert(ruta_nueva.end(), final.begin(),final.end());
-	// print_vec(ruta_nueva);
-	// cout<<endl;
-	return ruta_nueva;
+vector< vector< vector< int > > > Grafo::vecindadCompletaInicialTwoOpt(){
+	vector< vector<int> > camiones;
+	sweep(camiones);
+	return vecindadCompletaTwoOpt(camiones);
 }
 
-double Grafo::calcularDistancia(vector<int> ruta){
-	double suma = 0;
-	for(int i = 0; i < ruta.size()-1; i++){
-		for(int k = 0; k < _vertices[ruta[i]].size(); k++){
-			suma = suma + diffEuclidea(ruta[i],ruta[i+1]);
-			// if(_vertices[ruta[i]][k].id == ruta[i+1] ){
-			// 	suma = suma + _vertices[ruta[i]][k].weight;		
-			// }
-		}
-	}
-	// cout<< suma<<endl;
-	return suma;
-}
-
-vector<int> Grafo::TwoOptCompleto(vector<int> ruta){
-	double menor_distancia = calcularDistancia(ruta);
-	double distancia_nueva;
-	vector<int> mejor_ruta(ruta);
-	// print_vec(mejor_ruta);
+vector< vector<int> > Grafo::vecindadUnaRutaTwoOpt(vector<int> ruta){
+	vector< vector <int> > rutas;
 	for(int i = 1; i < ((int)(ruta.size())) -2; i++){
 		for(int j = i+2; j < ((int)ruta.size()); j++){
-			vector<int> nueva_ruta = TwoOptswap(mejor_ruta, i, j);
-			// print_vec(nueva_ruta);
-			distancia_nueva = calcularDistancia(nueva_ruta);
-			if(distancia_nueva < menor_distancia){
-				mejor_ruta = nueva_ruta;
-				menor_distancia = distancia_nueva;
-				// TwoOptCompleto(mejor_ruta);
-				// break;
-			}
+			vector<int> nueva_ruta = TwoOptswap(ruta, i, j);
+			rutas.push_back(nueva_ruta);
 		}
 	}
-	// print_vec(mejor_ruta);
-	// cout<<endl;
-	return mejor_ruta;
+	return rutas;
 }
 
-vector< vector<int> > Grafo::routear_conTwoOpt( vector< vector<int> > clusters) {
-	int cantClusters = clusters.size();
-	vector< vector<int> > rutas;
-	for(int i = 0; i < cantClusters; i++){
+vector< vector< vector< int > > > Grafo::vecindadCompletaTwoOpt(vector< vector< int > > clusters){
+	vector< vector< vector< int > > > vecindad_completa;
+	// sweep(clusters);
+	for(int i = 0; i < clusters.size(); i++){
 		vector<Coordenadas> coordenadas_cluster;
-		// clusters[i].push_back(_deposito);
 		for(int j = 0; j < clusters[i].size(); j++){
 			coordenadas_cluster.push_back(_puntos[clusters[i][j]]);
 		}
@@ -277,15 +240,73 @@ vector< vector<int> > Grafo::routear_conTwoOpt( vector< vector<int> > clusters) 
 		for(int k = 0; k < l.size(); k++){
 			clusters[i][k] = copy[l[k]];
 		}
-		double costo_anterior = calcularDistancia(clusters[i]);
 		clusters[i].push_back(_deposito);
 		clusters[i].insert(clusters[i].begin(),_deposito);
-		// print_vec(clusters[i]);
+		vector< vector <int> > rutas = vecindadUnaRutaTwoOpt(clusters[i]);
+		clusters[i].erase(clusters[i].begin());
+		clusters[i].erase(clusters[i].begin()+clusters[i].size()-1);
+		vecindad_completa.push_back(rutas);
+	}
+	return vecindad_completa;
+}
+
+
+vector<int> Grafo::TwoOptswap(vector<int> ruta, int i, int k){
+	vector<int> ruta_nueva(ruta.begin(), ruta.begin() + i);
+	vector<int> final(ruta.begin()+k,ruta.end());
+	for(int j = k-1; j >= i; j--){
+		ruta_nueva.push_back(ruta[j]);
+	}
+	ruta_nueva.insert(ruta_nueva.end(), final.begin(),final.end());
+	return ruta_nueva;
+}
+
+double Grafo::calcularDistancia(vector<int> ruta){
+	double suma = 0;
+	for(int i = 0; i < ruta.size()-1; i++){
+		for(int k = 0; k < _vertices[ruta[i]].size(); k++){
+			suma = suma + diffEuclidea(ruta[i],ruta[i+1]);
+		}
+	}
+	return suma;
+}
+
+vector<int> Grafo::TwoOptCompleto(vector<int> ruta){
+	double menor_distancia = calcularDistancia(ruta);
+	double distancia_nueva;
+	vector<int> mejor_ruta(ruta);
+	for(int i = 1; i < ((int)(ruta.size())) -2; i++){
+		for(int j = i+2; j < ((int)ruta.size()); j++){
+			vector<int> nueva_ruta = TwoOptswap(mejor_ruta, i, j);
+			distancia_nueva = calcularDistancia(nueva_ruta);
+			if(distancia_nueva < menor_distancia){
+				mejor_ruta = nueva_ruta;
+				menor_distancia = distancia_nueva;
+			}
+		}
+	}
+	return mejor_ruta;
+}
+
+vector< vector<int> > Grafo::routear_conTwoOpt( vector< vector<int> > clusters) {
+	int cantClusters = clusters.size();
+	vector< vector<int> > rutas;
+	for(int i = 0; i < cantClusters; i++){
+		vector<Coordenadas> coordenadas_cluster;
+		for(int j = 0; j < clusters[i].size(); j++){
+			coordenadas_cluster.push_back(_puntos[clusters[i][j]]);
+		}
+		Grafo g1(coordenadas_cluster);
+		vector<int> l = g1.solveTSP();
+		vector<int> copy = clusters[i];
+		for(int k = 0; k < l.size(); k++){
+			clusters[i][k] = copy[l[k]];
+		}
+		clusters[i].push_back(_deposito);
+		clusters[i].insert(clusters[i].begin(),_deposito);
 		clusters[i] = TwoOptCompleto(clusters[i]);
 		clusters[i].erase(clusters[i].begin());
 		clusters[i].erase(clusters[i].begin()+clusters[i].size()-1);
-		double costo_posterior = calcularDistancia(clusters[i]);
-		// print_vec(clusters[i]);
 	}
 	return clusters;
 }
@@ -295,7 +316,6 @@ vector< vector<int> > Grafo::routear_conTwoOpt2( vector< vector<int> > clusters)
 	vector< vector<int> > rutas;
 	for(int i = 0; i < cantClusters; i++){
 		vector<Coordenadas> coordenadas_cluster;
-		// clusters[i].push_back(_deposito);
 		for(int j = 0; j < clusters[i].size(); j++){
 			coordenadas_cluster.push_back(_puntos[clusters[i][j]]);
 		}
@@ -308,7 +328,6 @@ vector< vector<int> > Grafo::routear_conTwoOpt2( vector< vector<int> > clusters)
 		clusters[i].push_back(_deposito);
 		clusters[i].insert(clusters[i].begin(),_deposito);
 		double costo_anterior = calcularDistancia(clusters[i]);
-		// print_vec(clusters[i]);
 		clusters[i] = TwoOptCompleto(clusters[i]);
 		double costo_posterior = calcularDistancia(clusters[i]);
 
@@ -320,14 +339,12 @@ vector< vector<int> > Grafo::routear_conTwoOpt2( vector< vector<int> > clusters)
 			temp.push_back(_deposito);
 			temp.insert(temp.begin(),_deposito);
 			costo_anterior = calcularDistancia(temp);
-			// print_vec(clusters[i]);
 			temp = TwoOptCompleto(temp);
 			costo_posterior = calcularDistancia(temp);
 
 			temp.erase(temp.begin());
 			temp.erase(temp.begin()+temp.size()-1);
 		}
-		// print_vec(clusters[i]);
 	}
 	return clusters;
 }
