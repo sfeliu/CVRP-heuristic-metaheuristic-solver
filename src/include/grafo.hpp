@@ -115,6 +115,7 @@ class Grafo
 
         //void logPesos();
 
+		vector< vector< vector< int > > > vecindadTwoOpt(vector< vector< vector< int > > > vecindad_completa);
 		vector< vector< vector< int > > > vecindadCompletaInicialTwoOpt();
 		vector< vector<int> > vecindadUnaRutaTwoOpt(vector<int> ruta);
 		vector< vector< vector< int > > > vecindadCompletaTwoOpt(vector< vector<int> > clusters);

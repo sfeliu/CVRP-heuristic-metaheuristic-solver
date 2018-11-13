@@ -212,13 +212,59 @@ void Grafo::DFS( vector<int>& inorderWalk, int& actual, int padre) { // requiere
 vector< vector< vector< int > > > Grafo::vecindadCompletaInicialTwoOpt(){
 	vector< vector<int> > camiones;
 	sweep(camiones);
-	return vecindadCompletaTwoOpt(camiones);
+	vector< vector< vector< int > > > res = vecindadCompletaTwoOpt(camiones);
+    // for(int i = 0; i < res.size(); i++){
+    //         cout<< "cluster " << i << " : " << res[i].size()<<endl;
+    // }
+    return res;
 }
+
+vector< vector< vector< int > > > Grafo::vecindadTwoOpt(vector< vector< vector< int > > > vecindad_completa){
+	vector< vector< vector<int> > > vecindad;
+	for(int i = 0; i < vecindad_completa.size(); i++){
+		// cout<< "vecindad_completa.size(): " << vecindad_completa.size() <<endl;
+
+		vector< vector< vector< int > > > sol_temp1;
+		vector< vector< int > > primero;
+		primero.push_back(vecindad_completa[i][0]);
+		sol_temp1.push_back(primero);
+		for(int j = 0; j < vecindad_completa.size(); j++){
+			vector< vector< vector< int > > > sol_temp2;
+			// cout<< "j: " << j <<endl;
+			if(j != i){
+				for(int t = 0; t < sol_temp1.size(); t++){
+					// vector< vector< int > > sol_temp3 = sol_temp1[t];
+					for(int k = 0; k < vecindad_completa[j].size(); k++){
+						vector< vector< int > > sol_temp3 = sol_temp1[t];
+						sol_temp3.push_back(vecindad_completa[j][k]);
+						sol_temp2.push_back(sol_temp3);
+					}					
+				}
+
+				sol_temp1 = sol_temp2;
+			}
+		}
+		// cout<< "sol_temp1[200].size(): " << sol_temp1[200].size()<<endl;
+		// cout<< "sol_temp1.size(): " << sol_temp1.size()<<endl;
+
+		for(int n = 0; n < sol_temp1.size(); n++){
+			vecindad.push_back(sol_temp1[n]);		
+		}
+		// cout<< "sol_temp1.size(): " << sol_temp1.size()<<endl;
+	}
+	return vecindad;
+}
+
 
 vector< vector<int> > Grafo::vecindadUnaRutaTwoOpt(vector<int> ruta){
 	vector< vector <int> > rutas;
+	if(ruta.size() < 4){
+		rutas.push_back(ruta);
+		return rutas;
+	}
+
 	for(int i = 1; i < ((int)(ruta.size())) -2; i++){
-		for(int j = i+2; j < ((int)ruta.size()); j++){
+		for(int j = i+1; j < ((int)ruta.size()); j++){
 			vector<int> nueva_ruta = TwoOptswap(ruta, i, j);
 			rutas.push_back(nueva_ruta);
 		}
@@ -243,13 +289,16 @@ vector< vector< vector< int > > > Grafo::vecindadCompletaTwoOpt(vector< vector< 
 		clusters[i].push_back(_deposito);
 		clusters[i].insert(clusters[i].begin(),_deposito);
 		vector< vector <int> > rutas = vecindadUnaRutaTwoOpt(clusters[i]);
+		for(int k = 0; k < rutas.size(); k++){
+			rutas[k].erase(rutas[k].begin());
+			rutas[k].erase(rutas[k].begin()+rutas[k].size()-1);			
+		}
 		clusters[i].erase(clusters[i].begin());
 		clusters[i].erase(clusters[i].begin()+clusters[i].size()-1);
 		vecindad_completa.push_back(rutas);
 	}
 	return vecindad_completa;
 }
-
 
 vector<int> Grafo::TwoOptswap(vector<int> ruta, int i, int k){
 	vector<int> ruta_nueva(ruta.begin(), ruta.begin() + i);
