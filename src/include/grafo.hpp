@@ -36,6 +36,10 @@ struct Camion
         vector<int> circuito;
         int merch;
         double distancia;
+    bool operator==(const Camion& a) const
+    {
+        return (id == a.id && circuito == a.circuito && merch == a.merch && distancia == a.distancia);
+    }
     };
 
 
@@ -43,6 +47,10 @@ struct Resultado
     {
         vector<Camion> camiones;
         double costo_total;
+        bool operator==(const Resultado& a) const
+        {
+            return (camiones == a.camiones && costo_total == a.costo_total);
+        }
     };
 
 struct Saving{
@@ -138,12 +146,15 @@ class Grafo
 		Resultado calcular_resultado(vector<Camion> res);
 		Resultado calcular_resultado(vector<vector<int>> res);
 		vector<Resultado> get_vecindario(Resultado res, int mode);
+        vector<Resultado> vecinos_interchange(Resultado res_inicial);
+        bool resultadoFactible(Resultado res);
 
         double diffEuclidea(int u, int v);
 		vector< vector<int> > GolosoMasCercano();
 		int tomarMinDist(int nodo, list<int>& l);
 		vector<vector <int> > clusterizeRadial();
 		vector<int> NearestNeighbourTSP(vector<int> cluster);
+        Camion generateCamion(vector<int> circuito, int id);
 		vector<Camion> generateCamiones(vector< vector<int> > circuitos);
 		int deposito();
         vector<vector<int> > NNRadial();

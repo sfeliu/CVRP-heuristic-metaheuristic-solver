@@ -568,7 +568,7 @@ bool porPeso_savings(Saving a, Saving b){
 
 
 bool porPeso_resultados(Resultado a, Resultado b){
-	return (a.costo_total > b.costo_total);
+	return (a.costo_total < b.costo_total);
 }
 
 
@@ -1378,24 +1378,104 @@ int Grafo::deposito() {
     return _deposito;
 }
 
+Camion Grafo::generateCamion(vector<int> circuito, int id){
+    Camion camion = Camion();
+    camion.distancia = peso(_deposito, circuito[0]);
+    camion.merch = 0;
+    camion.id = id;
+    for(int j=0; j<circuito.size() - 1; j++){
+        camion.circuito.push_back(circuito[j]);
+        camion.distancia += peso(circuito[j], circuito[j+1]);
+        camion.merch += _demandas[circuito[j]];
+    }
+    camion.circuito.push_back(circuito[circuito.size()-1]);
+    camion.distancia += peso(circuito[circuito.size()-1], _deposito);
+    camion.merch += _demandas[circuito[circuito.size()-1]];
+    return camion;
+}
+
+
 vector<Camion> Grafo::generateCamiones(vector<vector<int>> circuitos) {
     vector<Camion> camiones;
     for(int i=0; i<circuitos.size(); i++){
-        Camion camion = Camion();
-        camion.distancia = peso(_deposito, circuitos[i][0]);
-        camion.merch = 0;
-        camion.id = i;
-        for(int j=0; j<circuitos[i].size() - 1; j++){
-            camion.circuito.push_back(circuitos[i][j]);
-            camion.distancia += peso(circuitos[i][j], circuitos[i][j+1]);
-            camion.merch += _demandas[circuitos[i][j]];
-        }
-        camion.circuito.push_back(circuitos[i][circuitos[i].size()-1]);
-        camion.distancia += peso(circuitos[i][circuitos[i].size()-1], _deposito);
-        camion.merch += _demandas[circuitos[i][circuitos[i].size()-1]];
-        camiones.push_back(camion);
+        camiones.push_back(generateCamion(circuitos[i], i));
     }
     return camiones;
+}
+
+
+bool Grafo::resultadoFactible(Resultado res){
+    for(auto camion : res.camiones){
+        if(camion.merch > _capacidad){
+            return false;
+        }
+    }
+    return true;
+}
+
+
+vector<Resultado> Grafo::vecinos_interchange(Resultado res_inicial){
+    vector<Resultado> vecinos_factibles;
+
+    vector<int> posiciones_iniciales;
+    vector<unsigned long> tamanos_ciclos;
+    // Escribo en un vector los nodos en el orden inicial y me guardo los tamanos de los ciclos.
+    // Supongamos C1 = 123; C2 = 456; --> Resultado = 123456
+    tamanos_ciclos.push_back(0);
+    for(auto camion : res_inicial.camiones){
+        posiciones_iniciales.insert(posiciones_iniciales.end(), camion.circuito.begin(), camion.circuito.end());
+        tamanos_ciclos.push_back(posiciones_iniciales.size());
+    }
+
+    Camion camion_temp;
+    vector<int> circuito_temp;
+    vector<int> posiciones_temporal;
+    vector<int> ciclos_modificados;
+    Resultado res_temporal;
+    // itero posicion a pocision, generando nuevos vecinos factibles
+    for(int i=0; i<posiciones_iniciales.size(); i++){
+        for(int j=i+1; j<posiciones_iniciales.size(); j++){
+
+            // Creo el nuevo resultado.
+            res_temporal = res_inicial;
+            posiciones_temporal = posiciones_iniciales;
+            iter_swap(posiciones_temporal.begin() + i, posiciones_temporal.begin() + j);
+
+            // Obtengo los ciclos que fueron modificados
+            ciclos_modificados.clear();
+            for(int k=0; k<tamanos_ciclos.size()-1; k++){
+                if(tamanos_ciclos[k] <= i){
+                	if(i < tamanos_ciclos[k+1]) {
+						ciclos_modificados.push_back(k);
+					}
+                }else if(tamanos_ciclos[k] <= j) {
+					if (j < tamanos_ciclos[k+1]) {
+						ciclos_modificados.push_back(k);
+					}
+				}
+            }
+
+            // Creo los camiones modificados sin modificar los que no fueron modicicados
+            for(int k=0; k<res_inicial.camiones.size(); k++){
+                if(find(ciclos_modificados.begin(), ciclos_modificados.end(), k) != ciclos_modificados.end()) {
+                    circuito_temp.clear();
+                    auto inicio_circuito = posiciones_temporal.begin() + tamanos_ciclos[k];
+                    auto fin_circuito = posiciones_temporal.begin() + tamanos_ciclos[k + 1];
+                    circuito_temp.insert(circuito_temp.end(), inicio_circuito, fin_circuito);
+                    camion_temp = generateCamion(circuito_temp, res_inicial.camiones[k].id);
+                    res_temporal.camiones[k] = camion_temp;
+                    res_temporal.costo_total -= res_inicial.camiones[k].distancia;
+                    res_temporal.costo_total += camion_temp.distancia;
+                }
+            }
+
+            // Chequeo si el resultado es factible
+            if(resultadoFactible(res_temporal)){
+                vecinos_factibles.push_back(res_temporal);
+            }
+        }
+    }
+    return vecinos_factibles;
 }
 
 
@@ -1403,7 +1483,7 @@ Resultado Grafo::calcular_resultado(vector<Camion> res){
 	Resultado resultado;
 	resultado.camiones = res;
 	resultado.costo_total = 0;
-	for(auto const camion : res){
+	for(auto const &camion : res){
 		resultado.costo_total += camion.distancia;
 	}
 	return resultado;
@@ -1418,7 +1498,7 @@ Resultado Grafo::calcular_resultado(vector<vector<int>> res){
 
 vector<Resultado> Grafo::get_vecindario(Resultado res, int mode){
     if(mode == 0){
-
+        return vecinos_interchange(res);
     }
 }
 
@@ -1435,6 +1515,7 @@ double enfriar(double temp, int mode){
 Resultado take_res(vector<Resultado> vecindario, vector<Resultado> vecinos_ya_vistos, int mode){
 	if(mode == 0) {
 		sort(vecindario.begin(), vecindario.end(), porPeso_resultados);
+		bool ya_visto = false;
 		for(auto vecino : vecindario){
 			if(find(vecinos_ya_vistos.begin(), vecinos_ya_vistos.end(), vecino) == vecinos_ya_vistos.end()){
 				return vecino;
@@ -1456,30 +1537,27 @@ vector<Camion> Grafo::simulatedAnnealing(vector<Camion> res_inicial, int picking
 	Resultado res_actual = best_res;
 	vector<Resultado> vecindario = get_vecindario(best_res, vecindario_mode);
 	sort(vecindario.begin(),vecindario.end(), porPeso_resultados);
-	double max_temp = vecindario[0].costo_total - res_actual.costo_total;
-	double min_temp = vecindario[vecindario.size()-1].costo_total - res_actual.costo_total;
+	double min_temp = vecindario[0].costo_total - res_actual.costo_total;
+	double max_temp = vecindario[vecindario.size()-1].costo_total - res_actual.costo_total;
 	double temperature = max_temp;
-	bool nuevo_res = false;
 	vector<Resultado> vecinos_ya_vistos;
 	res_actual = take_res(vecindario, vecinos_ya_vistos, picking_mode);
-	Resultado res_temporal = res_actual;
+	Resultado res_temporal;
 	double diferencia;
 
 	while(temperature > min_temp){
-		if(nuevo_res) {
-			vecindario = get_vecindario(res_actual, vecindario_mode);
-			vecinos_ya_vistos.clear();
-		}else{
-			vecinos_ya_vistos.push_back(res_temporal);
-		}
 		res_temporal = take_res(vecindario, vecinos_ya_vistos, picking_mode);
 		diferencia = res_temporal.costo_total - res_actual.costo_total;
 		if(diferencia >= 0 || exp((-diferencia)/temperature) > get_random()){
+			vecinos_ya_vistos.clear();
+			vecinos_ya_vistos.push_back(res_actual);
 			res_actual = res_temporal;
-			nuevo_res = true;
+			vecindario = get_vecindario(res_actual, vecindario_mode);
 			if(res_actual.costo_total <= best_res.costo_total){
 				best_res = res_actual;
 			}
+		}else{
+			vecinos_ya_vistos.push_back(res_temporal);
 		}
 		temperature = enfriar(temperature, enfriar_mode);
 	}
