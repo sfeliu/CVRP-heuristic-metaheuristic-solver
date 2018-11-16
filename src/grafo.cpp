@@ -1491,7 +1491,8 @@ vector<Resultado> Grafo::get_vecindario(Resultado res, int mode){
 double enfriar(double temp, int mode, double tempMin){
 	if(mode == 0){
 		if (temp < 0.03*tempMin)
-		temp = abs(temp - tempMin)/2;
+			temp = tempMin - 1;
+		temp = (temp - abs(tempMin))/2;
 	}
 
 	return temp;
