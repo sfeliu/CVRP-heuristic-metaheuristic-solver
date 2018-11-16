@@ -60,15 +60,11 @@ void Grafo::crearStar(int center){
 }
 
 int Grafo::tomarMinDist(int nodo, list<int>& l){
-	if (l.empty()) {
-		cout << "tomarMinDist rompe en vacio"<< endl;
-	}
 	list<int>::iterator it = l.begin();
 	int nodo_min_dist = *it;
   int min = peso(*it,nodo);
 	while(it != l.end()){
     double p = peso(*it,nodo);
-		//cout <<"peso: "<< p<< " iterador: "<< *it<< endl;
 		if (p < min) {
 			min = p;
 			nodo_min_dist = *it;
@@ -79,44 +75,28 @@ int Grafo::tomarMinDist(int nodo, list<int>& l){
 }
 
 vector< vector<int> > Grafo::GolosoMasCercano(){
-	cout << "Inicio GolosoMasCercano"<< endl;
 	int cant_dep_a_visitar = _puntos.size();
 	std::list<int> ids;
-	for(int i = 2; i < cant_dep_a_visitar; i++)
+	for(int i = 0; i < cant_dep_a_visitar; i++)
 	{
 		ids.push_back(i);
 	}
   ids.remove(_deposito);
 	int m;
 	vector< vector<int> > ciclos;
-  //cout << cant_dep_a_visitar << endl;
-  int j = 0;
 	while(!ids.empty()){
-		j++;
 		vector<int> ciclo = {};
-
 		m = tomarMinDist(_deposito,ids);
-		//cout <<"vecino mas cercano "<< j << " es: "<< m<<" con peso: " << peso(m,_deposito)<<endl;
-
 		int distancia = peso(_deposito,m);
-
 		int demanda = 0;
-    int k = 0;
 		while(_demandas[m] + demanda  <= _capacidad && !ids.empty()){
-			cout << "cicloInterno : " << k << endl;
-      k++;
 			ciclo.push_back(m);
 			ids.remove(m);
 			demanda = demanda + _demandas[m];
-			cout <<"demanda: "<< demanda-_demandas[m]<< endl;
-      if(!ids.empty()){
-        m = tomarMinDist(m,ids);
-      }
-			cout <<"viejo: "<< m<< endl;
-			cout <<"nueva_demanda: "<< demanda<< endl;
-			cout << endl;
+      		if(!ids.empty()){
+        		m = tomarMinDist(m,ids);
+      		}
 		}
-		ciclo.push_back(_deposito);
 		ciclos.push_back(ciclo);
 	}
 	return ciclos;
