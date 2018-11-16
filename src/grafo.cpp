@@ -93,10 +93,10 @@ vector< vector<int> > Grafo::GolosoMasCercano(){
   int j = 0;
 	while(!ids.empty()){
 		j++;
-		vector<int> ciclo = {_deposito};
+		vector<int> ciclo = {};
 
 		m = tomarMinDist(_deposito,ids);
-		cout <<"vecino mas cercano "<< j << " es: "<< m<<" con peso: " << peso(m,_deposito)<<endl;
+		//cout <<"vecino mas cercano "<< j << " es: "<< m<<" con peso: " << peso(m,_deposito)<<endl;
 
 		int distancia = peso(_deposito,m);
 
@@ -119,21 +119,6 @@ vector< vector<int> > Grafo::GolosoMasCercano(){
 		ciclo.push_back(_deposito);
 		ciclos.push_back(ciclo);
 	}
-	cout << ciclos.size()<< endl;
-	int costo_de_rutas = 0;
-	for(int i = 0; i < ciclos.size(); i++)
-	{
-		int costo_ruta = 0;
-		for(int j = 0; j < ciclos[i].size()-1; j++)
-		{
-			costo_ruta += peso(ciclos[i][j+1],ciclos[i][j]);
-			cout << ciclos[i][j]+1 << " ";
-		}
-		cout << ciclos[0][0]+1 << " ";
-		costo_de_rutas += costo_ruta;
-		cout << endl;
-	}
-	cout << costo_de_rutas << endl;
 	return ciclos;
 }
 
