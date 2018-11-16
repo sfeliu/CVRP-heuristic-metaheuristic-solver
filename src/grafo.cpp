@@ -1519,7 +1519,7 @@ double get_random(){
 }
 
 
-vector<Camion> Grafo::simulatedAnnealing(vector<Camion> res_inicial, int picking_mode, int enfriar_mode, int vecindario_mode) {
+Resultado Grafo::simulatedAnnealing(vector<Camion> res_inicial, int picking_mode, int enfriar_mode, int vecindario_mode) {
 	Resultado best_res = calcular_resultado(res_inicial);
 	Resultado res_actual = best_res;
 	vector<Resultado> vecindario = get_vecindario(best_res, vecindario_mode);
@@ -1548,5 +1548,5 @@ vector<Camion> Grafo::simulatedAnnealing(vector<Camion> res_inicial, int picking
 		}
 		temperature = enfriar(temperature, enfriar_mode, min_temp);
 	}
-    return vector<Camion>();
+    return best_res;
 }
