@@ -1488,9 +1488,11 @@ vector<Resultado> Grafo::get_vecindario(Resultado res, int mode){
 }
 
 
-double enfriar(double temp, int mode){
+double enfriar(double temp, int mode, double tempMin){
 	if(mode == 0){
-		temp = temp - temp/10;
+		if (temp < 0.03*tempMin)
+			temp = tempMin - 1;
+		temp = abs(temp - tempMin)/2;
 	}
 
 	return temp;
@@ -1544,7 +1546,7 @@ vector<Camion> Grafo::simulatedAnnealing(vector<Camion> res_inicial, int picking
 		}else{
 			vecinos_ya_vistos.push_back(res_temporal);
 		}
-		temperature = enfriar(temperature, enfriar_mode);
+		temperature = enfriar(temperature, enfriar_mode, min_temp);
 	}
     return vector<Camion>();
 }
