@@ -9,8 +9,8 @@ int main(int argc, char** argv){
     if(mode==0) {
         Grafo g = Grafo(tsp, "kn");
         vector<Camion> resultado = g.heuristica_savings();
-        resultado = g.simulatedAnnealing(resultado, 0, 0, 0);
-        save_test(g, filepath, "savings", resultado);
+        Resultado res = g.simulatedAnnealing(resultado, 0, 0, 0);
+        save_test(g, filepath, "savings", res.camiones);
     }
     if(mode==1){
         Grafo g = Grafo(tsp, "kn");
