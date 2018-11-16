@@ -28,6 +28,13 @@ int main(int argc, char** argv){
         save_test(g, filepath,
                   "radial", resultado);
     }
+    if(mode==3) {
+        Grafo g = Grafo(tsp, "kn");
+        vector<vector<int> > clusters = g.GolosoMasCercano();
+        vector<Camion> resultado = g.generateCamiones(clusters);
+        save_test(g, filepath,
+                  "goloso", resultado);
+    }
 
     return 0;
 }
