@@ -9,8 +9,9 @@ int main(int argc, char** argv){
     if(mode==0) {
         Grafo g = Grafo(tsp, "kn");
         vector<Camion> resultado = g.heuristica_savings();
-        Resultado res = g.simulatedAnnealing(resultado, 0, 0, 0);
-        save_test(g, filepath, "savings", res.camiones);
+        save_test(g, filepath, "savings", resultado);
+        Resultado res = g.simulatedAnnealing(resultado, 0, 1, 0);
+        save_test(g, filepath, "savings_sa", res.camiones);
     }
     if(mode==1){
         Grafo g = Grafo(tsp, "kn");
@@ -25,8 +26,9 @@ int main(int argc, char** argv){
         Grafo g = Grafo(tsp, "kn");
         vector<vector<int> > clusters = g.NNRadial();
         vector<Camion> resultado = g.generateCamiones(clusters);
-        save_test(g, filepath,
-                  "radial", resultado);
+        save_test(g, filepath, "radial", resultado);
+        Resultado res = g.simulatedAnnealing(resultado, 0, 0, 0);
+        save_test(g, filepath, "radial_sa", res.camiones);
     }
     if(mode==3) {
         Grafo g = Grafo(tsp, "kn");

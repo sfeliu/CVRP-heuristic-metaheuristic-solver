@@ -1468,11 +1468,19 @@ vector<Resultado> Grafo::get_vecindario(Resultado res, int mode){
 }
 
 double enfriar(double temp, int mode, double tempMin){
+    cout << (abs(temp - tempMin)) << endl;
 	if (mode == 0){
-		if (abs(temp - tempMin) < 0.001)
+		if (abs(temp - tempMin) < 0.000000001)
 			temp = tempMin - 1;
 		else
-			temp = (temp + tempMin) / 2;
+			temp = (temp + tempMin) / 5;
+
+	}
+	if(mode == 1){
+		if (temp < 0.03*tempMin)
+			temp = tempMin - 1;
+		temp = (temp - (abs(tempMin)/20));
+		cout << temp << endl;
 	}
 
 	return temp;
@@ -1481,14 +1489,17 @@ double enfriar(double temp, int mode, double tempMin){
 
 Resultado take_res(vector<Resultado> vecindario, vector<Resultado> vecinos_ya_vistos, int mode){
 	if(mode == 0) {
-		sort(vecindario.begin(), vecindario.end(), porPeso_resultados);
-		bool ya_visto = false;
-		for(auto vecino : vecindario){
-			if(find(vecinos_ya_vistos.begin(), vecinos_ya_vistos.end(), vecino) == vecinos_ya_vistos.end()){
-				return vecino;
-			}
-		}
-	}
+        sort(vecindario.begin(), vecindario.end(), porPeso_resultados);
+        for (auto vecino : vecindario) {
+            if (find(vecinos_ya_vistos.begin(), vecinos_ya_vistos.end(), vecino) == vecinos_ya_vistos.end()) {
+                return vecino;
+            }
+        }
+    }/*
+	if(mode == 1) {
+	    vector<Resultado> diferencia;
+        set_difference(.begin(), v1.end(), v2.begin(), v2.end(), inserter(diferencia, diferencia.begin()))
+	}*/
 	return vecindario[0];
 }
 
@@ -1514,10 +1525,12 @@ Resultado Grafo::simulatedAnnealing(vector<Camion> res_inicial, int picking_mode
 
 	while(temperature > min_temp){
 		res_temporal = take_res(vecindario, vecinos_ya_vistos, picking_mode);
-		diferencia = res_temporal.costo_total - res_actual.costo_total;
-		if(diferencia >= 0 || exp((-diferencia)/temperature) > get_random()){
-			vecinos_ya_vistos.clear();
-			vecinos_ya_vistos.push_back(res_actual);
+        diferencia = res_temporal.costo_total - res_actual.costo_total;
+        cout << "diferencia = " << diferencia << endl;
+        if(diferencia <= 0 || exp((-diferencia)/temperature) > get_random()){
+            cout << "Cambié de resultado" << endl;
+            cout << "iteración " << vecinos_ya_vistos.size() << endl;
+            vecinos_ya_vistos.push_back(res_actual);
 			res_actual = res_temporal;
 			vecindario = get_vecindario(res_actual, vecindario_mode);
 			if(res_actual.costo_total <= best_res.costo_total){
