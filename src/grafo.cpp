@@ -1123,7 +1123,7 @@ vector<int> Grafo::NearestNeighbourTSP(vector<int> cluster)
 	// std::vector<int> auxUsados;
 	std::vector<int> resultado;
 
-	int clienteActual = cluster[0];
+	int clienteActual = cluster[cluster.size()-1];
 	resultado.push_back(clienteActual);
 	
     cluster.erase(std::remove(cluster.begin(), cluster.end(), clienteActual), cluster.end());
@@ -1467,20 +1467,24 @@ vector<Resultado> Grafo::get_vecindario(Resultado res, int mode){
     }
 }
 
-double enfriar(double temp, int mode, double tempMin){
-    cout << (abs(temp - tempMin)) << endl;
+double enfriar(double temp, int mode, double tempMin, double tempIncial){
+    cout << tempMin << " "<< temp <<" " << (fabs(temp - tempMin)) << endl;
 	if (mode == 0){
-		if (abs(temp - tempMin) < 0.000000001)
+		if (fabs(temp - tempMin) < 0.000001)
 			temp = tempMin - 1;
 		else
-			temp = (temp + tempMin) / 5;
+			temp = (temp + tempMin) / 3;
 
 	}
 	if(mode == 1){
-		if (temp < 0.03*tempMin)
+		if (temp < 0.000003*tempMin)
 			temp = tempMin - 1;
-		temp = (temp - (abs(tempMin)/20));
-		cout << temp << endl;
+
+		temp = (temp - (fabs(tempMin)/10));
+    	cout << tempMin << " "<< temp <<" " << (abs(temp - tempMin)) << endl;
+	}
+	if (mode == 2){
+		temp = temp - fabs(tempMin - fabs(tempIncial))/30;
 	}
 
 	return temp;
@@ -1522,14 +1526,15 @@ Resultado Grafo::simulatedAnnealing(vector<Camion> res_inicial, int picking_mode
 	res_actual = take_res(vecindario, vecinos_ya_vistos, picking_mode);
 	Resultado res_temporal;
 	double diferencia;
+	double tempIncial = temperature;
 
 	while(temperature > min_temp){
 		res_temporal = take_res(vecindario, vecinos_ya_vistos, picking_mode);
         diferencia = res_temporal.costo_total - res_actual.costo_total;
-        cout << "diferencia = " << diferencia << endl;
+        // cout << "diferencia = " << diferencia << endl;
         if(diferencia <= 0 || exp((-diferencia)/temperature) > get_random()){
-            cout << "Cambié de resultado" << endl;
-            cout << "iteración " << vecinos_ya_vistos.size() << endl;
+            // cout << "Cambié de resultado" << endl;
+            // cout << "iteración " << vecinos_ya_vistos.size() << endl;
             vecinos_ya_vistos.push_back(res_actual);
 			res_actual = res_temporal;
 			vecindario = get_vecindario(res_actual, vecindario_mode);
@@ -1539,7 +1544,7 @@ Resultado Grafo::simulatedAnnealing(vector<Camion> res_inicial, int picking_mode
 		}else{
 			vecinos_ya_vistos.push_back(res_temporal);
 		}
-		temperature = enfriar(temperature, enfriar_mode, min_temp);
+		temperature = enfriar(temperature, enfriar_mode, min_temp, temperature);
 	}
     return best_res;
 }
