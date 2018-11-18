@@ -13,7 +13,9 @@ import subprocess as sub
 # output, errors = p.communicate()
 # res = output.decode("utf-8").split('\n')
 
-#file = "/home/santiago/Documents/algo_3/algo3TP3/test_results/A-n32-k5_savings.cvs"
+# file = "/home/cristian/Facu/AlgoritmosIII/Tps/TP3/test_results/P-n16-k8_radial.cvs"
+
+
 file = "test_results/" + sys.argv[1]
 res = []
 with open(file, 'r') as f:
@@ -66,4 +68,7 @@ pos = nx.get_node_attributes(G, 'pos')
 nx.draw(G, pos, node_size=300, edge_color=colors, node_color=color_map, alpha=0.9, width=3, with_labels=True,
         font_color='y', font_weight='heavy')
 
-plt.show()
+plt.savefig(sys.argv[1] + ".png")
+# plt.show()
+
+
