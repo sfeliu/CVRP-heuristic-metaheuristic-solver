@@ -51,6 +51,10 @@ struct Resultado
         {
             return (camiones == a.camiones && costo_total == a.costo_total);
         }
+        bool operator<(const Resultado& a) const
+        {
+            return (costo_total < a.costo_total);
+        }
     };
 
 struct Saving{
@@ -143,6 +147,7 @@ class Grafo
 		vector< vector<int> > solveVSP();
 		vector< vector<int> > routear( vector< vector<int> > clusters);
 		Resultado simulatedAnnealing(vector<Camion> res_inicial, int picking_mode, int enfriar_mode, int vecindario_mode);
+		Resultado simulatedAnnealing_swp(vector<Camion> res_inicial, int enfriar_mode, int vecindario_mode);
 		Resultado calcular_resultado(vector<Camion> res);
 		Resultado calcular_resultado(vector<vector<int>> res);
 		vector<Resultado> get_vecindario(Resultado res, int mode);
