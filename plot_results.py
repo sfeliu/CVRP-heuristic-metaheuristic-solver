@@ -68,7 +68,7 @@ pos = nx.get_node_attributes(G, 'pos')
 nx.draw(G, pos, node_size=300, edge_color=colors, node_color=color_map, alpha=0.9, width=3, with_labels=True,
         font_color='y', font_weight='heavy')
 
-plt.savefig(sys.argv[1] + ".png")
+plt.savefig("imgs/" + sys.argv[1] + ".png")
 # plt.show()
 
 
