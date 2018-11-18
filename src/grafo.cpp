@@ -1491,6 +1491,14 @@ double enfriar(double temp, int mode, double tempMin, double tempIncial){
 }
 
 
+double get_random(int max_value){
+    srand(time(NULL));
+    double rand_number = (rand() % (10000*max_value)) / 10000.0;
+    cout << rand_number << endl;
+    return rand_number;
+}
+
+
 Resultado take_res(vector<Resultado> vecindario, vector<Resultado> vecinos_ya_vistos, int mode){
 	if(mode == 0) {
         sort(vecindario.begin(), vecindario.end(), porPeso_resultados);
@@ -1499,18 +1507,15 @@ Resultado take_res(vector<Resultado> vecindario, vector<Resultado> vecinos_ya_vi
                 return vecino;
             }
         }
-    }/*
+    }
 	if(mode == 1) {
 	    vector<Resultado> diferencia;
-        set_difference(.begin(), v1.end(), v2.begin(), v2.end(), inserter(diferencia, diferencia.begin()))
-	}*/
+        set_difference(vecindario.begin(), vecindario.end(), vecinos_ya_vistos.begin(), vecinos_ya_vistos.end(),
+                       inserter(diferencia, diferencia.begin()));
+        int random_index = static_cast<int>(get_random(static_cast<int>(diferencia.size())));
+        return diferencia[random_index];
+	}
 	return vecindario[0];
-}
-
-
-double get_random(){
-	srand(time(NULL));
-	return rand() % 10000 / 10000;
 }
 
 
@@ -1532,7 +1537,7 @@ Resultado Grafo::simulatedAnnealing(vector<Camion> res_inicial, int picking_mode
 		res_temporal = take_res(vecindario, vecinos_ya_vistos, picking_mode);
         diferencia = res_temporal.costo_total - res_actual.costo_total;
         // cout << "diferencia = " << diferencia << endl;
-        if(diferencia <= 0 || exp((-diferencia)/temperature) > get_random()){
+        if(diferencia <= 0 || exp((-diferencia)/temperature) > get_random(1)){
             // cout << "Cambié de resultado" << endl;
             // cout << "iteración " << vecinos_ya_vistos.size() << endl;
             vecinos_ya_vistos.push_back(res_actual);
@@ -1545,6 +1550,45 @@ Resultado Grafo::simulatedAnnealing(vector<Camion> res_inicial, int picking_mode
 			vecinos_ya_vistos.push_back(res_temporal);
 		}
 		temperature = enfriar(temperature, enfriar_mode, min_temp, temperature);
+	}
+    return best_res;
+}
+
+
+Resultado Grafo::simulatedAnnealing_swp(vector<Camion> res_inicial, int enfriar_mode, int vecindario_mode) {
+	int picking_mode = 1;
+	Resultado best_res = calcular_resultado(res_inicial);
+	Resultado res_actual = best_res;
+	vector<Resultado> vecindario = get_vecindario(best_res, vecindario_mode);
+	sort(vecindario.begin(),vecindario.end(), porPeso_resultados);
+	double min_temp = vecindario[0].costo_total - res_actual.costo_total;
+	double max_temp = vecindario[vecindario.size()-1].costo_total - res_actual.costo_total;
+	double temperature = max_temp;
+	vector<Resultado> vecinos_ya_vistos;
+	res_actual = take_res(vecindario, vecinos_ya_vistos, picking_mode);
+	Resultado res_temporal;
+	double diferencia;
+
+	while(temperature > min_temp){
+		res_temporal = take_res(vecindario, vecinos_ya_vistos, picking_mode);
+        diferencia = res_temporal.costo_total - res_actual.costo_total;
+        cout << "diferencia = " << diferencia << endl;
+        if(diferencia <= 0 || exp((-diferencia)/temperature) > get_random(1)){
+            cout << "Cambié de resultado" << endl;
+            cout << "iteración " << vecinos_ya_vistos.size() << endl;
+            vecinos_ya_vistos.push_back(res_actual);
+			res_actual = res_temporal;
+			vecindario = get_vecindario(res_actual, vecindario_mode);
+			if(res_actual.costo_total <= best_res.costo_total){
+				best_res = res_actual;
+			}
+		}else{
+			vecinos_ya_vistos.push_back(res_temporal);
+		}
+		temperature = enfriar(temperature, enfriar_mode, min_temp, temperature);
+        if(temperature < (max_temp - min_temp)/2){
+        	picking_mode = 0;
+        }
 	}
     return best_res;
 }
