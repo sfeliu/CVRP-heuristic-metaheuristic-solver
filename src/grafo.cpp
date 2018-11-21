@@ -159,6 +159,36 @@ void Grafo::sweep(vector< vector <int> >& clusters){ //complejidad O(V*log(V))
 	return;
 }
 
+void Grafo::sweep_gap(vector< vector <int> >& clusters){ //complejidad O(V*log(V))
+	vector< tuple<int,double> > angulos = getAngulos();
+	sort(angulos.begin(), angulos.end(), porPeso);
+	vector<double> v;
+	for(int i = 0; i < angulos.size(); i++){
+		if(i == 0){
+				v.push_back( 360 - (get<1>(angulos[angulos.size()-1]) + get<1>(angulos[0])) );
+		}else{
+			v.push_back(get<1>(angulos[i]) - get<1>(angulos[i-1]));
+		}
+	}
+	int c = distance(v.begin(), max_element(v.begin(), v.end()) );
+	int contenido = 0;
+	int clusterNum = 0;
+	int i = c;
+	while(i - c < angulos.size()){
+		contenido = 0;
+		vector<int> temp;
+		clusters.push_back(temp);
+		while(contenido + _demandas[get<0>(angulos[i%v.size()])] < _capacidad && i-c<angulos.size()){
+			clusters[clusterNum].push_back(get<0>(angulos[i%v.size()]));
+			contenido = contenido + _demandas[get<0>(angulos[i%v.size()])];
+			i++;
+		}
+		clusterNum++;
+	}
+	cout << clusters.size() << endl;	
+	return;
+}
+
 
 void Grafo::DFS( vector<int>& inorderWalk, int& actual, int padre) { // requiere que g sea digrafo o tengo que sacar las aristas de vuelta en un grafo
 	inorderWalk.push_back(actual);

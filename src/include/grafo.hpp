@@ -142,6 +142,7 @@ class Grafo
 		vector< vector<int> > solveVSP_conTwoOpt();
 
         vector< tuple<int,double> > getAngulos(); //complejidad O(V)
+		void sweep_gap(vector< vector <int> >& clusters); //complejidad O(V*log(V))
 		void sweep(vector< vector <int> >& clusters); //complejidad O(V*log(V))
 		void DFS( vector<int>& inorderWalk, int& actual, int padre); // requiere que g sea digrafo o tengo que sacar las aristas de vuelta en un grafo
 		vector<int> solveTSP();
