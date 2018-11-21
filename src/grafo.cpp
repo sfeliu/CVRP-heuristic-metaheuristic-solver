@@ -1477,10 +1477,18 @@ vector<Resultado> Grafo::get_vecindario(Resultado res, int mode){
     if(mode == 0){
         return vecinos_interchange(res);
     }
+    if(mode == 1){
+        vector<Resultado> resultados;
+        vector<vector<vector<int>>> vecindad = vecindadTwoOpt(res);
+        for(int i = 0; i<vecindad.size(); i++){
+            resultados.push_back(calcular_resultado(vecindad[i]));
+        }
+        return resultados;
+    }
 }
 
 double enfriar(double temp, int mode, double tempMin, double tempIncial){
-    cout << tempMin << " "<< temp <<" " << (fabs(temp - tempMin)) << endl;
+    //cout << tempMin << " "<< temp <<" " << (fabs(temp - tempMin)) << endl;
 	if (mode == 0){
 		if (fabs(temp - tempMin) < 0.000001)
 			temp = tempMin - 1;
@@ -1492,8 +1500,8 @@ double enfriar(double temp, int mode, double tempMin, double tempIncial){
 		if (temp < 0.000003*tempMin)
 			temp = tempMin - 1;
 
-		temp = (temp - (fabs(tempMin)/10));
-    	cout << tempMin << " "<< temp <<" " << (abs(temp - tempMin)) << endl;
+		temp = (temp - (fabs(tempMin)/7));
+    	//cout << tempMin << " "<< temp <<" " << (abs(temp - tempMin)) << endl;
 	}
 	if (mode == 2){
 		temp = temp - fabs(tempMin - fabs(tempIncial))/30;
@@ -1506,7 +1514,6 @@ double enfriar(double temp, int mode, double tempMin, double tempIncial){
 double get_random(int max_value){
     srand(time(NULL));
     double rand_number = (rand() % (10000*max_value)) / 10000.0;
-    cout << rand_number << endl;
     return rand_number;
 }
 
@@ -1567,7 +1574,7 @@ Resultado Grafo::simulatedAnnealing(vector<Camion> res_inicial, int picking_mode
 }
 
 
-Resultado Grafo::simulatedAnnealing_swp(vector<Camion> res_inicial, int enfriar_mode, int vecindario_mode) {
+Resultado Grafo::simulatedAnnealing_swp(vector<Camion> res_inicial, int vecindario_mode, int enfriar_mode, double breaking_point) {
 	int picking_mode = 1;
 	Resultado best_res = calcular_resultado(res_inicial);
 	Resultado res_actual = best_res;
@@ -1584,10 +1591,10 @@ Resultado Grafo::simulatedAnnealing_swp(vector<Camion> res_inicial, int enfriar_
 	while(temperature > min_temp){
 		res_temporal = take_res(vecindario, vecinos_ya_vistos, picking_mode);
         diferencia = res_temporal.costo_total - res_actual.costo_total;
-        cout << "diferencia = " << diferencia << endl;
+        //cout << "diferencia = " << diferencia << endl;
         if(diferencia <= 0 || exp((-diferencia)/temperature) > get_random(1)){
-            cout << "Cambié de resultado" << endl;
-            cout << "iteración " << vecinos_ya_vistos.size() << endl;
+            //cout << "Cambié de resultado" << endl;
+            //cout << "iteración " << vecinos_ya_vistos.size() << endl;
             vecinos_ya_vistos.push_back(res_actual);
 			res_actual = res_temporal;
 			vecindario = get_vecindario(res_actual, vecindario_mode);
@@ -1598,7 +1605,7 @@ Resultado Grafo::simulatedAnnealing_swp(vector<Camion> res_inicial, int enfriar_
 			vecinos_ya_vistos.push_back(res_temporal);
 		}
 		temperature = enfriar(temperature, enfriar_mode, min_temp, temperature);
-        if(temperature < (max_temp - min_temp)/2){
+        if(temperature < (max_temp - min_temp)*breaking_point/100){
         	picking_mode = 0;
         }
 	}

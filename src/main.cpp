@@ -13,8 +13,10 @@ int main(int argc, char** argv){
         vector<Camion> resultado = g.heuristica_savings();
         save_test(g, filepath, "savings", resultado);
         if (simAnnealing == 1){
-
-            Resultado res = g.simulatedAnnealing(resultado, 0, 2, 0);
+            int vecindario = atoi(argv[4]);
+            int enfriar = atoi(argv[5]);
+            double breaking_point = (double)atoi(argv[6]);
+            Resultado res = g.simulatedAnnealing_swp(resultado, vecindario, enfriar, breaking_point);
             save_test(g, filepath, "savings_sa", res.camiones);
         }
     }
@@ -28,9 +30,11 @@ int main(int argc, char** argv){
         save_test(g,filepath,"sweep",resultado);
 
         if (simAnnealing == 1){
-
-            Resultado res = g.simulatedAnnealing(resultado, 0, 2, 0);
-            save_test(g, filepath, "savings_sa", res.camiones);
+            int vecindario = atoi(argv[4]);
+            int enfriar = atoi(argv[5]);
+            double breaking_point = (double)atoi(argv[6]);
+            Resultado res = g.simulatedAnnealing_swp(resultado, vecindario, enfriar, breaking_point);
+            save_test(g, filepath, "sweep_sa", res.camiones);
         }
     }
     if(mode==2) {
@@ -40,9 +44,11 @@ int main(int argc, char** argv){
         save_test(g, filepath, "radial", resultado);
 
         if (simAnnealing == 1){
-
-            Resultado res = g.simulatedAnnealing(resultado, 0, 2, 0);
-            save_test(g, filepath, "savings_sa", res.camiones);
+            int vecindario = atoi(argv[4]);
+            int enfriar = atoi(argv[5]);
+            double breaking_point = (double)atoi(argv[6]);
+            Resultado res = g.simulatedAnnealing_swp(resultado, vecindario, enfriar, breaking_point);
+            save_test(g, filepath, "radial_sa", res.camiones);
         }
         // Resultado res = g.simulatedAnnealing(resultado, 0, 1, 0);
         // save_test(g, filepath, "radial_sa", res.camiones);
@@ -55,9 +61,11 @@ int main(int argc, char** argv){
                   "goloso", resultado);
 
         if (simAnnealing == 1){
-
-            Resultado res = g.simulatedAnnealing(resultado, 0, 2, 0);
-            save_test(g, filepath, "savings_sa", res.camiones);
+            int vecindario = atoi(argv[4]);
+            int enfriar = atoi(argv[5]);
+            double breaking_point = (double)atoi(argv[6]);
+            Resultado res = g.simulatedAnnealing_swp(resultado, vecindario, enfriar, breaking_point);
+            save_test(g, filepath, "goloso_sa", res.camiones);
         }
     }
 
