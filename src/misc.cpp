@@ -112,3 +112,23 @@ void save_test(Grafo g, string full_filepath, string test, vector<Camion> camion
     resultFile << costo_total << endl;
     resultFile.close();
 }
+void print_result(Grafo g, vector<Camion> camiones){
+
+    std::cout << camiones.size() << endl;
+    double costo_total = 0;
+    vector<vector<int>> circuitos;
+
+    for (auto &camion : camiones) {
+        circuitos.push_back(camion.circuito);
+    }
+
+    for(int i=0; i<circuitos.size(); i++){
+        cout << g.deposito() << " ";
+        for (int cliente : circuitos[i]) {
+            cout << cliente << " ";
+        }
+        cout << g.deposito() << endl;
+        costo_total += camiones[i].distancia;
+    }
+    cout << costo_total << endl;
+}
