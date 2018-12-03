@@ -15,7 +15,7 @@ objetivo = "objetivo"
 modes = ["savings", "sweep", "radial", "goloso"]
 for f in files:
     for mode in range(0, 4):
-        objetivo_f = f[0:l-4] + "_" + modes[mode] + ".cvs"
+        objetivo_f = f[0:len(f)-4] + "_" + modes[mode] + ".cvs"
         with open('test_results/'+objetivo_f, 'r') as results:
             lines = results.read().splitlines()
             valor = lines[-1]
