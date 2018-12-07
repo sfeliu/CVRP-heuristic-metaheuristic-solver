@@ -309,7 +309,7 @@ vector<int> Grafo::solveTSP() {
 
 vector< vector<int> > Grafo::solveVSP(){
 	vector< vector<int> > v;
-	sweep(v);
+	sweep_gap(v);
 	return routear(v);
 }
 
@@ -973,7 +973,7 @@ double enfriar(double temp, int mode, double tempMin, double tempIncial){
 		if (temp < 0.000003*tempMin)
 			temp = tempMin - 1;
 
-		temp = (temp - (fabs(tempMin)/7));
+		temp = (temp - (fabs(tempMin)/37));
 	}
 	if (mode == 2){
 		temp = temp - fabs(tempMin - fabs(tempIncial))/30;
@@ -989,8 +989,17 @@ double get_random(int max_value){
     return rand_number;
 }
 
+double get_temp(int iteracion, int cant_iteraciones, double max_temp, double min_temp, int mode){
+    if(mode==0){
+        return max_temp - ((double)iteracion/(double)cant_iteraciones)*(max_temp-min_temp);
+    }else if(mode == 1) {
+        return 1 / (((double) iteracion / (double) cant_iteraciones) + (1 / max_temp)) + min_temp;
+    }
+    return 0;
+}
 
-Resultado take_res(vector<Resultado> vecindario, vector<Resultado> vecinos_ya_vistos, int mode){
+
+Resultado take_res(Resultado res_actual, vector<Resultado> vecindario, vector<Resultado> vecinos_ya_vistos, int mode, bool vecinos_change){
 	if(mode == 0) {
         sort(vecindario.begin(), vecindario.end(), porPeso_resultados);
         for (auto vecino : vecindario) {
@@ -1001,8 +1010,17 @@ Resultado take_res(vector<Resultado> vecindario, vector<Resultado> vecinos_ya_vi
     }
 	if(mode == 1) {
 	    vector<Resultado> diferencia;
-        set_difference(vecindario.begin(), vecindario.end(), vecinos_ya_vistos.begin(), vecinos_ya_vistos.end(),
+	    if(vecinos_change) {
+            sort(vecindario.begin(), vecindario.end(), porPeso_resultados);
+            sort(vecinos_ya_vistos.begin(), vecinos_ya_vistos.end(), porPeso_resultados);
+        }
+	    set_difference(vecindario.begin(), vecindario.end(), vecinos_ya_vistos.begin(), vecinos_ya_vistos.end(),
                        inserter(diferencia, diferencia.begin()));
+        if(diferencia.empty() or (diferencia.size() == 1 and diferencia[0] == res_actual)){
+            Resultado nulo;
+            nulo.costo_total = 0;
+            return nulo;
+        }
         int random_index = static_cast<int>(get_random(static_cast<int>(diferencia.size())));
         return diferencia[random_index];
 	}
@@ -1010,39 +1028,55 @@ Resultado take_res(vector<Resultado> vecindario, vector<Resultado> vecinos_ya_vi
 }
 
 
-Resultado Grafo::simulatedAnnealing(vector<Camion> res_inicial, int picking_mode, int enfriar_mode, int vecindario_mode) {
+Resultado Grafo::simulatedAnnealing(vector<Camion> res_inicial, int enfriar_mode, int vecindario_mode, int cant_iteraciones) {
 	Resultado best_res = calcular_resultado(res_inicial);
 	Resultado res_actual = best_res;
 	vector<Resultado> vecindario = get_vecindario(best_res, vecindario_mode);
 	sort(vecindario.begin(),vecindario.end(), porPeso_resultados);
 	double min_temp = vecindario[0].costo_total - res_actual.costo_total;
 	double max_temp = vecindario[vecindario.size()-1].costo_total - res_actual.costo_total;
+	if(min_temp < 0){
+		max_temp = max_temp - min_temp;
+		min_temp = 0.0;
+	}
 	double temperature = max_temp;
 	vector<Resultado> vecinos_ya_vistos;
-	res_actual = take_res(vecindario, vecinos_ya_vistos, picking_mode);
-	Resultado res_temporal;
-	double diferencia;
-	double tempIncial = temperature;
+    bool vecinos_change = true;
+    res_actual = take_res(res_actual, vecindario, vecinos_ya_vistos, 1, vecinos_change);
+    Resultado res_temporal;
+    double diferencia;
+    double tempIncial = temperature;
+    int iteracion = 0;
 
-	while(temperature > min_temp){
-		res_temporal = take_res(vecindario, vecinos_ya_vistos, picking_mode);
+	while(iteracion < cant_iteraciones){
+		res_temporal = take_res(res_actual, vecindario, vecinos_ya_vistos, 1, vecinos_change);
+		if(res_temporal.costo_total == 0){
+		    // Me atore en un maximo local
+		    break;
+		}
         diferencia = res_temporal.costo_total - res_actual.costo_total;
+		temperature = get_temp(iteracion, cant_iteraciones, max_temp, min_temp, enfriar_mode);
+		cout << "temperatura: " << temperature << "; iteracion: " << iteracion << endl;
         if(diferencia <= 0 || exp((-diferencia)/temperature) > get_random(1)){
             vecinos_ya_vistos.push_back(res_actual);
 			res_actual = res_temporal;
 			vecindario = get_vecindario(res_actual, vecindario_mode);
-			if(res_actual.costo_total <= best_res.costo_total){
+            vecinos_change = true;
+			if(res_actual.costo_total < best_res.costo_total){
 				best_res = res_actual;
+				cout << "******************** ENCONTRE MAXIMO NUEVO VALOR " << best_res.costo_total << " EN ITERACIÓN " << iteracion << endl;
 			}
 		}else{
+            vecinos_change = false;
 			vecinos_ya_vistos.push_back(res_temporal);
 		}
-		temperature = enfriar(temperature, enfriar_mode, min_temp, temperature);
+		// temperature = enfriar(temperature, enfriar_mode, min_temp, temperature);
+        iteracion++;
 	}
     return best_res;
 }
 
-
+/*
 Resultado Grafo::simulatedAnnealing_swp(vector<Camion> res_inicial, int vecindario_mode, int enfriar_mode, double breaking_point) {
 	int picking_mode = 1;
 	Resultado best_res = calcular_resultado(res_inicial);
@@ -1053,12 +1087,14 @@ Resultado Grafo::simulatedAnnealing_swp(vector<Camion> res_inicial, int vecindar
 	double max_temp = vecindario[vecindario.size()-1].costo_total - res_actual.costo_total;
 	double temperature = max_temp;
 	vector<Resultado> vecinos_ya_vistos;
-	res_actual = take_res(vecindario, vecinos_ya_vistos, picking_mode);
+    // No usar
+	bool vecinos_change = false;
+	res_actual = take_res(res_actual, vecindario, vecinos_ya_vistos, picking_mode, vecinos_change);
 	Resultado res_temporal;
 	double diferencia;
 
-	while(temperature > min_temp){
-		res_temporal = take_res(vecindario, vecinos_ya_vistos, picking_mode);
+	while(650 <= best_res.costo_total){
+		res_temporal = take_res(res_actual, vecindario, vecinos_ya_vistos, picking_mode, vecinos_change);
         diferencia = res_temporal.costo_total - res_actual.costo_total;
         if(diferencia <= 0 || exp((-diferencia)/temperature) > get_random(1)){
             vecinos_ya_vistos.push_back(res_actual);
@@ -1077,3 +1113,4 @@ Resultado Grafo::simulatedAnnealing_swp(vector<Camion> res_inicial, int vecindar
 	}
     return best_res;
 }
+*/

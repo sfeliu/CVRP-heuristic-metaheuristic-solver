@@ -129,17 +129,17 @@ class Grafo
 
 		vector< vector< vector< int > > > vecindadTwoOptGrande(vector< vector< int > > sol);
 		vector< vector< vector< int > > > vecindadTwoOpt(Resultado sol);
-		vector< vector< vector< int > > > vecindadCompletaInicialTwoOpt();
+		//vector< vector< vector< int > > > vecindadCompletaInicialTwoOpt();
 		vector< vector<int> > vecindadUnaRutaTwoOpt(vector<int> ruta);
 		vector< vector< vector< int > > > vecindadCompletaTwoOpt(vector< vector<int> > sol);
 
-		vector< vector<int> > solveVSP_conTwoOpt2();
-		vector< vector<int> > routear_conTwoOpt2( vector< vector<int> > clusters);
-		vector< vector<int> > routear_conTwoOpt( vector< vector<int> > clusters);
-		vector<int> TwoOptCompleto(vector<int> ruta);
+		//vector< vector<int> > solveVSP_conTwoOpt2();
+		//vector< vector<int> > routear_conTwoOpt2( vector< vector<int> > clusters);
+		//vector< vector<int> > routear_conTwoOpt( vector< vector<int> > clusters);
+		//vector<int> TwoOptCompleto(vector<int> ruta);
 		vector<int> TwoOptswap(vector<int> ruta, int i, int k);
 		double calcularDistancia(vector<int> ruta);
-		vector< vector<int> > solveVSP_conTwoOpt();
+		//vector< vector<int> > solveVSP_conTwoOpt();
 
         vector< tuple<int,double> > getAngulos(); //complejidad O(V)
 		void sweep_gap(vector< vector <int> >& clusters); //complejidad O(V*log(V))
@@ -148,8 +148,8 @@ class Grafo
 		vector<int> solveTSP();
 		vector< vector<int> > solveVSP();
 		vector< vector<int> > routear( vector< vector<int> > clusters);
-		Resultado simulatedAnnealing(vector<Camion> res_inicial, int picking_mode, int enfriar_mode, int vecindario_mode);
-		Resultado simulatedAnnealing_swp(vector<Camion> res_inicial, int enfriar_mode, int vecindario_mode, double breaking_point);
+		Resultado simulatedAnnealing(vector<Camion> res_inicial, int enfriar_mode, int vecindario_mode, int cant_iteraciones);
+		// Resultado simulatedAnnealing_swp(vector<Camion> res_inicial, int enfriar_mode, int vecindario_mode, double breaking_point);
 		Resultado calcular_resultado(vector<Camion> res);
 		Resultado calcular_resultado(vector<vector<int>> res);
 		vector<Resultado> get_vecindario(Resultado res, int mode);
