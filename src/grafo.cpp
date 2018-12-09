@@ -58,7 +58,7 @@ void Grafo::crearStar(int center){
 int Grafo::tomarMinDist(int nodo, list<int>& l){
 	list<int>::iterator it = l.begin();
 	int nodo_min_dist = *it;
-  int min = peso(*it,nodo);
+  double min = peso(*it,nodo);
 	while(it != l.end()){
     double p = peso(*it,nodo);
 		if (p < min) {
@@ -611,21 +611,28 @@ vector<int> Grafo::NearestNeighbourTSP(vector<int> cluster)
 {
 	int n = cluster.size();
 	std::vector<int> resultado;
+	sort(cluster.begin(), cluster.end());
+	list<int> cluster_list;
+	copy(cluster.begin(), cluster.end(), back_inserter(cluster_list));
 
-	int clienteActual = cluster[cluster.size()-1];
+    // int clienteActual = cluster[cluster.size()-1];
+	int clienteActual = tomarMinDist(_deposito, cluster_list);
 	resultado.push_back(clienteActual);
-	
-    cluster.erase(std::remove(cluster.begin(), cluster.end(), clienteActual), cluster.end());
+	cluster_list.remove(clienteActual);
+    //cluster.erase(std::remove(cluster.begin(), cluster.end(), clienteActual), cluster.end());
 
 	for (int i = 1; i < n; i++){
-		auto min = std::min_element(begin(cluster), end(cluster),
-									[&](const int &a, const int &b) {
-										return peso(a,clienteActual) < peso(b,clienteActual);
-									});
-		
-		resultado.push_back(*min);
-		clienteActual = *min;
-	    cluster.erase(std::remove(cluster.begin(), cluster.end(), *min), cluster.end());
+		//auto min = std::min_element(begin(cluster), end(cluster),
+		//							[&](const int &a, const int &b) {
+		//								return peso(a,clienteActual) < peso(b,clienteActual);
+		//							});
+
+        clienteActual = tomarMinDist(clienteActual, cluster_list);
+        resultado.push_back(clienteActual);
+        cluster_list.remove(clienteActual);
+        //resultado.push_back(*min);
+        //clienteActual = *min;
+        //cluster.erase(std::remove(cluster.begin(), cluster.end(), *min), cluster.end());
 	}
 	return resultado;
 }
