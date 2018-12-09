@@ -990,10 +990,36 @@ double get_random(int max_value){
 }
 
 double get_temp(int iteracion, int cant_iteraciones, double max_temp, double min_temp, int mode){
-    if(mode==0){
+    if(mode==4){
         return max_temp - ((double)iteracion/(double)cant_iteraciones)*(max_temp-min_temp);
-    }else if(mode == 1) {
+    }else if(mode == 8) {
         return 1 / (((double) iteracion / (double) cant_iteraciones) + (1 / max_temp)) + min_temp;
+    }else if(mode == 9) {
+        return 0.002;
+    }else if(mode == 1) {
+        return min_temp + max_temp - pow(((double)iteracion / ((double)cant_iteraciones / (pow(max_temp, 1 / 4)))), 4);
+    }else if(mode == 0){
+        return min_temp + max_temp - pow(((double)iteracion/((double)cant_iteraciones/(pow(max_temp,1/8)))),8);
+    }else if(mode == 2){
+        double res = cos((double)iteracion/((2.0*cant_iteraciones)/M_PI))*max_temp;
+        if(res < min_temp){return min_temp;}
+        return res;
+    }else if(mode == 5){
+        double res = cos((double)iteracion/((2.0*cant_iteraciones)/M_PI) + M_PI/2.0)*max_temp + max_temp;
+        if(res < min_temp){return min_temp;}
+        return res;
+    }else if(mode == 3){
+        double res = cos((double)iteracion/((double)cant_iteraciones/M_PI))*(max_temp/2) + max_temp/2;
+        if(res < min_temp){return min_temp;}
+        return res;
+    }else if(mode == 6){
+        double res = pow((iteracion/(cant_iteraciones/pow(max_temp,1/4))) - pow(max_temp, 1/4),4);
+        if(res < min_temp){return min_temp;}
+        return res;
+    }else if(mode == 7){
+        double res = pow((iteracion/(cant_iteraciones/pow(max_temp,1/8))) - pow(max_temp, 1/8),8);
+        if(res < min_temp){return min_temp;}
+        return res;
     }
     return 0;
 }
@@ -1037,7 +1063,13 @@ Resultado Grafo::simulatedAnnealing(vector<Camion> res_inicial, int enfriar_mode
 	double max_temp = vecindario[vecindario.size()-1].costo_total - res_actual.costo_total;
 	if(min_temp < 0){
 		max_temp = max_temp - min_temp;
-		min_temp = 0.0;
+		min_temp = 0.0002;
+	}else if(min_temp > 0){
+	    max_temp = max_temp + min_temp;
+	    min_temp = 0.0002;
+	}else{
+	    max_temp += 0.0002;
+	    min_temp = 0.0002;
 	}
 	double temperature = max_temp;
 	vector<Resultado> vecinos_ya_vistos;
@@ -1052,11 +1084,12 @@ Resultado Grafo::simulatedAnnealing(vector<Camion> res_inicial, int enfriar_mode
 		res_temporal = take_res(res_actual, vecindario, vecinos_ya_vistos, 1, vecinos_change);
 		if(res_temporal.costo_total == 0){
 		    // Me atore en un maximo local
+		    cout << "Me atoré en un máximo local" << endl;
 		    break;
 		}
         diferencia = res_temporal.costo_total - res_actual.costo_total;
 		temperature = get_temp(iteracion, cant_iteraciones, max_temp, min_temp, enfriar_mode);
-		cout << "temperatura: " << temperature << "; iteracion: " << iteracion << endl;
+		//cout << "temperatura: " << temperature << "; iteracion: " << iteracion << endl;
         if(diferencia <= 0 || exp((-diferencia)/temperature) > get_random(1)){
             vecinos_ya_vistos.push_back(res_actual);
 			res_actual = res_temporal;
