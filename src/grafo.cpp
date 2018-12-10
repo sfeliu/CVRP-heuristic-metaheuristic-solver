@@ -107,7 +107,7 @@ bool porPeso(tuple<int,double> a, tuple<int,double> b){
 vector< tuple<int,double> > Grafo::getAngulos(){ //complejidad O(V)
 	vector< tuple<int,double> > angulos(_vertices.size());
 	for(int i = 0; i < _vertices.size(); i++){
-		if(i == _deposito){i++;}
+		if(i == _deposito){continue;}
 		double y1 = _puntos[i].y;
 		double y2 = _puntos[_deposito].y;
 		double x1 = _puntos[i].x;
