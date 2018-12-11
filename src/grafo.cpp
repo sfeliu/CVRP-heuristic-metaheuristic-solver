@@ -153,7 +153,7 @@ void Grafo::sweep_gap(vector< vector <int> >& clusters){ //complejidad O(V*log(V
 	vector<double> v;
 	for(int i = 0; i < angulos.size(); i++){
 		if(i == 0){
-				v.push_back( 360 - (get<1>(angulos[angulos.size()-1]) + get<1>(angulos[0])) );
+				v.push_back( (360 - get<1>(angulos[angulos.size()-1])) + get<1>(angulos[0]) );
 		}else{
 			v.push_back(get<1>(angulos[i]) - get<1>(angulos[i-1]));
 		}
