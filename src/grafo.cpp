@@ -1091,7 +1091,7 @@ Resultado Grafo::simulatedAnnealing(vector<Camion> res_inicial, int enfriar_mode
 		res_temporal = take_res(res_actual, vecindario, vecinos_ya_vistos, 1, vecinos_change);
 		if(res_temporal.costo_total == 0){
 		    // Me atore en un maximo local
-		    cout << "Me atoré en un máximo local" << endl;
+		    // cout << "Me atoré en un máximo local" << endl;
 		    break;
 		}
         diferencia = res_temporal.costo_total - res_actual.costo_total;
@@ -1104,7 +1104,7 @@ Resultado Grafo::simulatedAnnealing(vector<Camion> res_inicial, int enfriar_mode
             vecinos_change = true;
 			if(res_actual.costo_total < best_res.costo_total){
 				best_res = res_actual;
-				cout << "******************** ENCONTRE MAXIMO NUEVO VALOR " << best_res.costo_total << " EN ITERACIÓN " << iteracion << endl;
+				// cout << "******************** ENCONTRE MAXIMO NUEVO VALOR " << best_res.costo_total << " EN ITERACIÓN " << iteracion << endl;
 			}
 		}else{
             vecinos_change = false;

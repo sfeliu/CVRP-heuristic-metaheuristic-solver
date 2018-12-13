@@ -110,6 +110,7 @@ void save_test(Grafo g, string full_filepath, string test, vector<Camion> camion
         costo_total += camiones[i].distancia;
     }
     resultFile << costo_total << endl;
+    resultFile << camiones.size() << endl;
     resultFile.close();
 }
 void print_result(Grafo g, vector<Camion> camiones){
